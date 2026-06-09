@@ -4,8 +4,12 @@ import asyncio
 import json
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
 # --- CONFIGURATION ---
-API_KEY = "AIzaSyA-orJZwBwHlZTYLgY2h31mO19qrnrXKIU"
+API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = "gemini-3.1-flash-lite" # As requested
 INPUT_FILE = "petro_flares1.csv"
 OUTPUT_FILE = "well_data_updated.csv"
