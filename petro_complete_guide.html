@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PETRO — Carbon Emissions Intelligence Platform · Complete Guide v2.2.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0a1628;--navy-mid:#132240;--navy-pale:#1e2e4a;
+  --accent:#1e7b5e;--accent-light:#d4ede5;--accent-mid:#2a9e78;
+  --amber:#c47a1a;--amber-light:#fdf0d8;
+  --red:#b83232;--red-light:#fce8e8;
+  --slate:#6b7a8f;--slate-light:#f0f2f5;--slate-pale:#f8f9fa;
+  --border:rgba(10,22,40,0.1);--border-strong:rgba(10,22,40,0.18);
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);font-weight:300;color:var(--navy);background:#fafafa;line-height:1.75;font-size:15px;}
+
+/* ── Layout ─────────────────────────────────────────── */
+.doc-wrap{max-width:900px;margin:0 auto;padding:0 2rem 6rem;}
+
+/* ── Sticky nav ─────────────────────────────────────── */
+.sticky-bar{position:sticky;top:0;z-index:100;background:rgba(250,250,250,0.92);backdrop-filter:blur(12px);border-bottom:0.5px solid var(--border-strong);padding:0.6rem 2rem;display:flex;align-items:center;justify-content:space-between;max-width:100%;margin-left:calc(-50vw + 50%);width:100vw;}
+.sticky-brand{font-family:var(--serif);font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.sticky-brand span{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate);}
+.sticky-actions{display:flex;gap:10px;align-items:center;}
+.btn-print{font-family:var(--sans);font-size:12px;font-weight:500;background:var(--navy);color:#fff;border:none;border-radius:6px;padding:7px 18px;cursor:pointer;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:7px;transition:background 0.18s;}
+.btn-print:hover{background:var(--navy-mid);}
+.btn-toc{font-family:var(--sans);font-size:12px;font-weight:400;background:transparent;color:var(--slate);border:0.5px solid var(--border-strong);border-radius:6px;padding:7px 14px;cursor:pointer;transition:all 0.18s;}
+.btn-toc:hover{color:var(--navy);border-color:var(--navy);}
+
+/* ── Cover ──────────────────────────────────────────── */
+.cover{padding:4rem 0 3.5rem;border-bottom:0.5px solid var(--border-strong);margin-bottom:3.5rem;}
+.cover-eyebrow{font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.cover-eyebrow::after{content:'';flex:1;height:1px;background:var(--accent-light);}
+.cover-title{font-family:var(--serif);font-size:52px;line-height:1.1;color:var(--navy);margin-bottom:1rem;max-width:640px;}
+.cover-sub{font-size:18px;font-weight:300;color:var(--slate);line-height:1.6;max-width:560px;margin-bottom:2rem;}
+.cover-meta{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.cover-meta-item{font-size:12px;color:var(--slate);display:flex;align-items:center;gap:5px;}
+.cover-meta-item strong{color:var(--navy);font-weight:500;}
+
+/* ── Disclaimer ─────────────────────────────────────── */
+.disclaimer{border:0.5px solid var(--border-strong);border-left:3px solid var(--amber);border-radius:0 10px 10px 0;background:var(--amber-light);padding:1.1rem 1.4rem;display:flex;gap:1rem;align-items:flex-start;margin-bottom:3rem;}
+.disclaimer-icon{flex-shrink:0;margin-top:2px;}
+.disclaimer-label{font-size:10px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--amber);margin-bottom:0.35rem;}
+.disclaimer p{font-size:13.5px;color:#5a3a08;line-height:1.7;margin:0;}
+
+/* ── TOC ────────────────────────────────────────────── */
+.toc{background:#fff;border:0.5px solid var(--border-strong);border-radius:12px;padding:2rem;margin-bottom:3.5rem;}
+.toc-title{font-family:var(--serif);font-size:22px;color:var(--navy);margin-bottom:1.2rem;}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.toc-section{padding:0.3rem 0;}
+.toc-section-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin:0.8rem 0 0.35rem;padding-bottom:0.25rem;border-bottom:0.5px solid var(--accent-light);}
+.toc-link{display:block;font-size:13px;color:var(--slate);text-decoration:none;padding:2px 0;transition:color 0.15s;}
+.toc-link:hover{color:var(--accent);}
+.toc-link::before{content:'→ ';font-size:11px;color:var(--accent-light);}
+
+/* ── Section headings ───────────────────────────────── */
+.section{margin-bottom:4rem;}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:0.6rem;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--accent-light);max-width:60px;}
+h2{font-family:var(--serif);font-size:34px;font-weight:400;color:var(--navy);line-height:1.2;margin-bottom:1.2rem;}
+h3{font-family:var(--sans);font-size:16px;font-weight:600;color:var(--navy);margin:2rem 0 0.7rem;letter-spacing:-0.01em;}
+h4{font-family:var(--sans);font-size:14px;font-weight:500;color:var(--navy);margin:1.4rem 0 0.4rem;}
+p{margin-bottom:0.9rem;color:#2a3545;}
+.lead{font-size:17px;font-weight:300;color:var(--slate);line-height:1.7;margin-bottom:1.5rem;border-left:2px solid var(--accent-light);padding-left:1.2rem;}
+
+/* ── Hero banner ────────────────────────────────────── */
+.hero-banner{background:var(--navy);border-radius:12px;padding:2.5rem 2.5rem 2rem;margin-bottom:2.5rem;position:relative;overflow:hidden;}
+.hero-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(30,123,94,0.15);}
+.hero-banner::after{content:'';position:absolute;bottom:-60px;right:80px;width:130px;height:130px;border-radius:50%;background:rgba(30,123,94,0.08);}
+.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:0.7rem;}
+.hero-heading{font-family:var(--serif);font-size:34px;font-weight:400;color:#fff;line-height:1.15;margin-bottom:1rem;max-width:520px;}
+.hero-sub{font-size:14px;font-weight:300;color:rgba(255,255,255,0.6);line-height:1.7;max-width:480px;}
+.hero-stat-row{display:flex;gap:2.5rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
+.hero-stat-val{font-family:var(--serif);font-size:26px;color:#fff;line-height:1;}
+.hero-stat-label{font-size:11px;color:rgba(255,255,255,0.45);font-weight:400;margin-top:3px;}
+.hero-stat-val em{font-family:var(--sans);font-size:13px;color:#6de4b4;font-weight:500;margin-left:4px;font-style:normal;}
+
+/* ── Cards ──────────────────────────────────────────── */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.5rem 0;}
+.card{border:0.5px solid var(--border-strong);border-radius:10px;padding:1.3rem 1.4rem;background:#fff;}
+.card.accent-green{border-left:3px solid var(--accent);border-radius:0 10px 10px 0;}
+.card.accent-amber{border-left:3px solid var(--amber);border-radius:0 10px 10px 0;}
+.card.accent-red{border-left:3px solid var(--red);border-radius:0 10px 10px 0;}
+.card.accent-navy{border-left:3px solid var(--navy);border-radius:0 10px 10px 0;}
+.card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:0.75rem;font-size:15px;}
+.card-icon.green{background:var(--accent-light);}
+.card-icon.amber{background:var(--amber-light);}
+.card-icon.red{background:var(--red-light);}
+.card-icon.navy{background:#dde4f0;}
+.card h4{font-size:14px;font-weight:500;color:var(--navy);margin:0 0 0.35rem;}
+.card p{font-size:13px;color:var(--slate);line-height:1.6;margin:0;}
+.tag{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.06em;padding:2px 8px;border-radius:20px;margin-bottom:0.5rem;}
+.tag.blue{background:#e8f4fd;color:#185fa5;}
+.tag.amber{background:var(--amber-light);color:var(--amber);}
+.tag.red{background:var(--red-light);color:var(--red);}
+.tag.green{background:var(--accent-light);color:var(--accent);}
+
+/* ── Architecture box ───────────────────────────────── */
+.arch-box{background:var(--navy);border-radius:12px;padding:1.75rem;margin:1.5rem 0;overflow-x:auto;}
+.arch-box pre{font-family:'Courier New',monospace;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.7;white-space:pre;tab-size:2;}
+.arch-box pre .hl{color:#6de4b4;}
+
+/* ── Code block ─────────────────────────────────────── */
+.code-block{background:#f3f5f8;border:0.5px solid var(--border-strong);border-radius:8px;padding:1.1rem 1.3rem;margin:1rem 0;overflow-x:auto;}
+.code-block pre{font-family:'Courier New',monospace;font-size:12.5px;color:var(--navy-pale);line-height:1.7;white-space:pre;}
+.code-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate);margin-bottom:0.5rem;}
+
+/* ── Tables ─────────────────────────────────────────── */
+.data-table{width:100%;border-collapse:collapse;margin:1rem 0;border:0.5px solid var(--border-strong);border-radius:10px;overflow:hidden;}
+.data-table th{background:var(--navy);color:rgba(255,255,255,0.75);font-size:11px;font-weight:500;letter-spacing:0.07em;text-align:left;padding:9px 12px;}
+.data-table td{padding:9px 12px;font-size:13px;color:#2a3545;border-bottom:0.5px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:#fafbfc;}
+.data-table td.hl{background:rgba(30,123,94,0.05);}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.pill.yes{background:var(--accent-light);color:var(--accent);}
+.pill.no{background:var(--red-light);color:var(--red);}
+.pill.ltd{background:var(--amber-light);color:var(--amber);}
+.check{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.check.yes{background:var(--accent-light);color:var(--accent);}
+.check.no{background:var(--red-light);color:var(--red);}
+.check.partial{background:var(--amber-light);color:var(--amber);}
+
+/* ── Use-case list ──────────────────────────────────── */
+.use-case-list{margin:1.5rem 0;}
+.use-case{display:flex;gap:1rem;padding:1.1rem 1.25rem;border:0.5px solid var(--border-strong);border-radius:10px;margin-bottom:8px;align-items:flex-start;}
+.uc-icon{min-width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.uc-icon.green{background:var(--accent-light);}
+.uc-icon.amber{background:var(--amber-light);}
+.uc-icon.navy{background:#dde4f0;}
+.uc-icon.red{background:var(--red-light);}
+.uc-body h4{font-size:14px;font-weight:500;color:var(--navy);margin-bottom:3px;}
+.uc-body p{font-size:13px;color:var(--slate);margin:0;line-height:1.6;}
+.uc-highlight{font-size:12px;font-weight:500;color:var(--accent);margin-top:4px;}
+
+/* ── Info callout ───────────────────────────────────── */
+.callout{border:0.5px solid var(--border-strong);border-radius:10px;padding:1.3rem 1.5rem;margin:1.5rem 0;}
+.callout.green{border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:rgba(30,123,94,0.04);}
+.callout.amber{border-left:3px solid var(--amber);border-radius:0 10px 10px 0;background:rgba(196,122,26,0.04);}
+.callout.navy{border-left:3px solid var(--navy);border-radius:0 10px 10px 0;background:#f8f9fc;}
+.callout-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.4rem;}
+.callout.green .callout-label{color:var(--accent);}
+.callout.amber .callout-label{color:var(--amber);}
+.callout.navy .callout-label{color:var(--navy);}
+.callout p{font-size:13.5px;line-height:1.7;margin:0;color:#2a3545;}
+
+/* ── Quick-start table ──────────────────────────────── */
+.qs-table{width:100%;border-collapse:collapse;margin:1rem 0;}
+.qs-table tr{border-bottom:0.5px solid var(--border);}
+.qs-table td{padding:8px 12px;font-size:13.5px;vertical-align:top;}
+.qs-table td:first-child{font-weight:500;color:var(--navy);white-space:nowrap;width:25%;}
+.qs-table td:nth-child(2){color:var(--slate);width:20%;}
+.qs-table td:last-child{font-family:'Courier New',monospace;font-size:12px;color:var(--accent);background:rgba(30,123,94,0.04);border-radius:4px;}
+
+/* ── Endpoint cards ─────────────────────────────────── */
+.endpoint{background:#fff;border:0.5px solid var(--border-strong);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:10px;}
+.endpoint-header{display:flex;align-items:center;gap:10px;margin-bottom:0.5rem;}
+.method{font-family:'Courier New',monospace;font-size:11px;font-weight:600;background:#e0f0ea;color:var(--accent);padding:2px 8px;border-radius:4px;}
+.endpoint-path{font-family:'Courier New',monospace;font-size:13px;color:var(--navy-pale);font-weight:500;}
+.endpoint p{font-size:13px;color:var(--slate);margin:0 0 0.5rem;}
+.param-list{margin:0.5rem 0;font-size:12px;}
+.param-list li{list-style:none;color:#2a3545;padding:1px 0;}
+.param-list li code{background:var(--slate-light);padding:0 4px;border-radius:3px;font-family:'Courier New',monospace;}
+
+/* ── Math formula ───────────────────────────────────── */
+.formula-box{background:var(--slate-light);border-radius:8px;padding:1rem 1.3rem;margin:0.75rem 0;text-align:center;}
+.formula-box code{font-family:'Courier New',monospace;font-size:13.5px;color:var(--navy);}
+
+/* ── Step list ──────────────────────────────────────── */
+.steps{counter-reset:step;margin:1rem 0;}
+.step{counter-increment:step;display:flex;gap:1rem;margin-bottom:12px;align-items:flex-start;}
+.step::before{content:counter(step);min-width:26px;height:26px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:2px;}
+.step-body{font-size:14px;color:#2a3545;line-height:1.6;}
+.step-body strong{color:var(--navy);font-weight:500;}
+.step-body code{font-family:'Courier New',monospace;font-size:12px;background:var(--slate-light);padding:1px 5px;border-radius:3px;}
+
+/* ── Troubleshooting ────────────────────────────────── */
+.issue-block{border:0.5px solid var(--border-strong);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.issue-header{background:var(--red-light);padding:0.6rem 1rem;font-size:13px;font-weight:500;color:var(--red);}
+.issue-body{padding:0.8rem 1rem;font-size:13px;color:#2a3545;line-height:1.65;}
+.issue-body code{font-family:'Courier New',monospace;font-size:12px;background:var(--slate-light);padding:1px 5px;border-radius:3px;}
+
+/* ── Divider ────────────────────────────────────────── */
+.section-divider{border:none;border-top:0.5px solid var(--border-strong);margin:3.5rem 0;}
+
+/* ── Print button bottom ─────────────────────────────── */
+.print-footer{margin-top:4rem;padding:2rem 0 1rem;border-top:0.5px solid var(--border-strong);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.print-note{font-size:12px;color:var(--slate);}
+
+/* ── Print media ─────────────────────────────────────── */
+@media print{
+  .sticky-bar,.print-footer{display:none!important;}
+  body{background:#fff;}
+  .doc-wrap{padding:0;}
+  .section{page-break-inside:avoid;}
+  .arch-box,.code-block{page-break-inside:avoid;}
+  a{color:var(--navy);}
+  .cover-title{font-size:38px;}
+  h2{font-size:26px;}
+}
+
+@media (max-width:620px){
+  .card-grid{grid-template-columns:1fr;}
+  .toc-grid{grid-template-columns:1fr;}
+  .cover-title{font-size:34px;}
+  h2{font-size:24px;}
+  .sticky-bar{padding:0.6rem 1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- Sticky nav -->
+<div class="sticky-bar">
+  <div class="sticky-brand">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e7b5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    PETRO <span>Complete Guide v2.2.0</span>
+  </div>
+  <div class="sticky-actions">
+    <button class="btn-toc" onclick="document.getElementById('toc').scrollIntoView({behavior:'smooth'})">Contents</button>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / Export PDF
+    </button>
+  </div>
+</div>
+
+<div class="doc-wrap">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-eyebrow">Carbon Emissions Intelligence Platform</div>
+    <h1 class="cover-title">PETRO — Complete Guide</h1>
+    <p class="cover-sub">Everything you need to understand, deploy, and use the PETRO satellite flaring intelligence system — from beginner orientation to advanced configuration.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>Version</strong> 2.2.0</div>
+      <div class="cover-meta-item"><strong>Updated</strong> May 2026</div>
+      <div class="cover-meta-item"><strong>Data source</strong> NASA FIRMS VIIRS NRT (375m)</div>
+      <div class="cover-meta-item"><strong>Emission model</strong> Elvidge 2016 + IPCC AR6</div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <div class="disclaimer-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c47a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div>
+      <div class="disclaimer-label">Data disclaimer &amp; methodology notice</div>
+      <p>Company names shown throughout this platform are approximated from publicly available resources and may not reflect actual operational attribution. All emissions estimates are derived from satellite thermal anomaly data using the Elvidge 2016 model and IPCC AR6 conversion factors. Results should be treated as indicative and cross-referenced with primary sources before use in formal reporting or regulatory proceedings.</p>
+    </div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc" id="toc">
+    <div class="toc-title">Table of Contents</div>
+    <div class="toc-grid">
+      <div>
+        <div class="toc-section-label">Overview</div>
+        <a href="#what-is-petro" class="toc-link">What is PETRO?</a>
+        <a href="#why-matters" class="toc-link">Why Does This Matter?</a>
+        <a href="#unique-value" class="toc-link">Unique Value &amp; Industry Standing</a>
+        <div class="toc-section-label">Architecture</div>
+        <a href="#architecture" class="toc-link">System Architecture</a>
+        <a href="#tech-stack" class="toc-link">Technology Stack</a>
+        <a href="#data-flow" class="toc-link">Data Flow &amp; Processing Pipeline</a>
+        <div class="toc-section-label">Features</div>
+        <a href="#features" class="toc-link">All Features &amp; Visualizations</a>
+        <a href="#ai-assistant" class="toc-link">AI Assistant (PetroCopilot)</a>
+        <a href="#wind-plume" class="toc-link">Wind &amp; Atmospheric Plume Simulator</a>
+        <a href="#world-bank" class="toc-link">World Bank Historical Data</a>
+      </div>
+      <div>
+        <div class="toc-section-label">API Reference</div>
+        <a href="#api-reference" class="toc-link">API Endpoints (Complete)</a>
+        <div class="toc-section-label">Science &amp; Algorithms</div>
+        <a href="#advanced-concepts" class="toc-link">DBSCAN Clustering</a>
+        <a href="#elvidge" class="toc-link">Elvidge 2016 Emission Model</a>
+        <a href="#co2-calc" class="toc-link">CO₂ Calculation</a>
+        <a href="#gas-value" class="toc-link">Gas-to-Market-Value</a>
+        <a href="#anomaly" class="toc-link">Anomaly Detection (2σ)</a>
+        <a href="#attribution" class="toc-link">Attribution &amp; Confidence</a>
+        <div class="toc-section-label">Operations</div>
+        <a href="#getting-started" class="toc-link">Getting Started</a>
+        <a href="#troubleshooting" class="toc-link">Troubleshooting</a>
+        <a href="#advanced-config" class="toc-link">Advanced Configuration</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: WHAT IS PETRO ── -->
+  <div class="section" id="what-is-petro">
+    <div class="section-label">Section 1 — Overview</div>
+    <h2>What is PETRO?</h2>
+    <p class="lead">Imagine seeing every instance of burning natural gas in oil fields worldwide in real-time, from satellites in space — knowing which company is responsible, how much CO₂ is being released, and the financial value of the wasted gas. That is PETRO.</p>
+
+    <p>PETRO is a <strong>dashboard and backend intelligence system</strong> that tracks global oil &amp; gas flaring (the burning of natural gas during oil extraction) using NASA satellite data. It detects, tracks, and quantifies flaring events by downloading daily thermal data from NASA satellites, identifying which flares belong to which company, calculating emissions and gas value from heat signatures, alerting on unusual spikes, and visualising everything on a global interactive map.</p>
+
+    <h3>What is "Flaring"?</h3>
+    <p>When oil companies drill for oil, they also produce natural gas as a byproduct. Instead of capturing the gas for sale, reinjecting it, or storing it, companies often <strong>burn it off at a flare stack</strong>. This happens because capture equipment is expensive, gas market prices may be low, infrastructure is unavailable at remote sites, or regulations allow it. The burning releases massive amounts of CO₂ and wastes gas that could otherwise be sold.</p>
+
+    <div class="card-grid">
+      <div class="card accent-green">
+        <div class="card-icon green">🛰️</div>
+        <h4>NASA FIRMS satellite data</h4>
+        <p>Daily thermal anomalies at 375m resolution from the VIIRS instrument — independent of company reporting.</p>
+      </div>
+      <div class="card accent-amber">
+        <div class="card-icon amber">🏭</div>
+        <h4>Company attribution</h4>
+        <p>Each detected flare matched to a known well and company using a two-stage deterministic and probabilistic pipeline.</p>
+      </div>
+      <div class="card accent-red">
+        <div class="card-icon red">📊</div>
+        <h4>Emission quantification</h4>
+        <p>CO₂ output and gas market value estimated per flare using peer-reviewed Elvidge 2016 model and IPCC AR6 factors.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="card-icon navy">🔔</div>
+        <h4>Anomaly intelligence</h4>
+        <p>Statistical spike detection flags flares burning above their 7-day baseline, graded by severity (2σ / 2.5σ / 3σ).</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 2: WHY MATTERS ── -->
+  <div class="section" id="why-matters">
+    <div class="section-label">Section 2 — Context</div>
+    <h2>Why Does This Matter?</h2>
+    <p class="lead">Most emissions data tools relay what companies choose to disclose. PETRO independently observes, calculates, and attributes carbon output using satellite physics — making it structurally impossible to manipulate.</p>
+
+    <div class="use-case-list">
+      <div class="use-case">
+        <div class="uc-icon green">📋</div>
+        <div class="uc-body">
+          <h4>ESG Analysts</h4>
+          <p>Companies are increasingly tracked by environmental footprint. PETRO provides real data instead of relying on self-reported emissions, updated daily from orbit.</p>
+          <div class="uc-highlight">Unique advantage: company-level CO₂ data that cannot be greenwashed, because it comes from orbit.</div>
+        </div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon red">⚖️</div>
+        <div class="uc-body">
+          <h4>Regulators &amp; Compliance Officers</h4>
+          <p>Enforcement historically relied on periodic inspections or self-reporting. PETRO provides continuous, jurisdiction-independent monitoring. When a flare spikes above its permitted baseline, the alert is automatic.</p>
+          <div class="uc-highlight">Unique advantage: evidence-grade anomaly alerts graded by statistical significance, not subjective judgement.</div>
+        </div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon amber">📈</div>
+        <div class="uc-body">
+          <h4>Investors</h4>
+          <p>Carbon pricing is accelerating globally. Companies with chronic high-volume flaring face growing financial exposure. PETRO turns that abstract risk into a quantified, ranked, trending metric — visible before any annual report lands.</p>
+          <div class="uc-highlight">Unique advantage: the gas value figure shows exactly how much money the company is burning rather than recovering — a direct proxy for operational discipline.</div>
+        </div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon navy">🔬</div>
+        <div class="uc-body">
+          <h4>Researchers &amp; Journalists</h4>
+          <p>Every number PETRO produces links back to its source: the satellite sensor, emission model, and confidence method. This full audit trail means findings can be cited, reproduced, and defended.</p>
+          <div class="uc-highlight">Unique advantage: full methodological transparency — every data point cites its scientific source.</div>
+        </div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon green">🏭</div>
+        <div class="uc-body">
+          <h4>Oil &amp; Gas Operators</h4>
+          <p>Forward-thinking operators use PETRO to find their own inefficiencies before regulators do. The gas value field converts every flare into a clear business case — how much revenue is being literally burned.</p>
+          <div class="uc-highlight">Unique advantage: flaring converted to USD loss per day — the fastest way to make the ROI case for capture infrastructure investment.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 3: UNIQUE VALUE ── -->
+  <div class="section" id="unique-value">
+    <div class="section-label">Section 3 — Unique Value</div>
+    <h2>Unique value &amp; industry standing</h2>
+
+    <div class="hero-banner">
+      <div class="hero-eyebrow">PETRO — Carbon Emissions Intelligence</div>
+      <div class="hero-heading">The only platform that sees what companies don't report</div>
+      <div class="hero-sub">Built on satellite physics, peer-reviewed emission models, and statistical anomaly detection — the data is independent by design.</div>
+      <div class="hero-stat-row">
+        <div class="hero-stat">
+          <div class="hero-stat-val">375m <em>resolution</em></div>
+          <div class="hero-stat-label">NASA VIIRS sensor precision</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">Daily <em>updates</em></div>
+          <div class="hero-stat-label">Near real-time processing</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">8 <em>regions</em></div>
+          <div class="hero-stat-label">Major oil flaring basins covered</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">30+ <em>years</em></div>
+          <div class="hero-stat-label">World Bank historical baseline</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Competitive comparison</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Feature</th><th class="hl">PETRO</th><th>Bloomberg ESG</th><th>Refinitiv</th><th>Self-reported GHG</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Independent satellite data</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check partial">~</span></td><td><span class="check no">✗</span></td></tr>
+        <tr><td>Per-operator daily emissions</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td><td><span class="check partial">~</span></td></tr>
+        <tr><td>Anomaly alerts (statistical)</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td></tr>
+        <tr><td>Gas financial value per flare</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td></tr>
+        <tr><td>Attribution confidence score</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td></tr>
+        <tr><td>Open REST API</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check partial">~</span></td><td><span class="check no">✗</span></td></tr>
+        <tr><td>Fully free data sources</td><td class="hl"><span class="check yes">✓</span></td><td><span class="check no">✗</span></td><td><span class="check no">✗</span></td><td><span class="check partial">~</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Capability matrix by industry vertical</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>What PETRO delivers</th><th class="hl">Finance &amp; ESG</th><th>Regulation</th><th>Industry ops</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Live emissions per operator</td><td class="hl"><span class="pill yes">Core use</span></td><td><span class="pill yes">Core use</span></td><td><span class="pill yes">Core use</span></td></tr>
+        <tr><td>Attribution confidence score</td><td class="hl"><span class="pill yes">Essential</span></td><td><span class="pill yes">Essential</span></td><td><span class="pill ltd">Useful</span></td></tr>
+        <tr><td>Gas financial value (USD/day)</td><td class="hl"><span class="pill yes">High value</span></td><td><span class="pill ltd">Secondary</span></td><td><span class="pill yes">High value</span></td></tr>
+        <tr><td>Anomaly alerts &amp; spike detection</td><td class="hl"><span class="pill ltd">Monitoring</span></td><td><span class="pill yes">Core use</span></td><td><span class="pill yes">Core use</span></td></tr>
+        <tr><td>Company leaderboard ranking</td><td class="hl"><span class="pill yes">Core use</span></td><td><span class="pill yes">Core use</span></td><td><span class="pill ltd">Benchmarking</span></td></tr>
+        <tr><td>Trend &amp; historical baseline charts</td><td class="hl"><span class="pill yes">High value</span></td><td><span class="pill yes">High value</span></td><td><span class="pill yes">High value</span></td></tr>
+        <tr><td>Climate TRACE cross-reference</td><td class="hl"><span class="pill yes">Benchmarking</span></td><td><span class="pill yes">Benchmarking</span></td><td><span class="pill ltd">Optional</span></td></tr>
+        <tr><td>API &amp; CSV data export</td><td class="hl"><span class="pill yes">Integration</span></td><td><span class="pill ltd">Reporting</span></td><td><span class="pill yes">Integration</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout navy">
+      <div class="callout-label">The core distinction</div>
+      <p>Every other emissions reporting tool depends, at some point, on a human choosing to disclose something. PETRO's data originates from a sensor 500 miles above the atmosphere, processed through peer-reviewed science, and delivered with a per-observation confidence score. That chain — <strong>satellite to science to screen</strong> — is what makes the intelligence structurally different from anything built on voluntary disclosure.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 4: ARCHITECTURE ── -->
+  <div class="section" id="architecture">
+    <div class="section-label">Section 4 — Architecture</div>
+    <h2>System Architecture</h2>
+    <p class="lead">PETRO uses a three-layer architecture with no database — keeping everything in RAM for instant access, fetched fresh within the cache TTL, scaling without database complexity.</p>
+
+    <div class="arch-box">
+      <pre><span class="hl">PRESENTATION LAYER</span>  (React + Mapbox · Port 5173)
+  ├─ Interactive Global Map (3D globe projection)
+  ├─ Company Leaderboard (top 20 emitters)
+  ├─ KPI Cards &amp; Anomaly Alert Feed
+  └─ Trend Charts + Historical Baseline
+
+             │ JSON API calls
+             ▼
+
+<span class="hl">PROCESSING LAYER</span>  (FastAPI Backend · Port 8000)
+  ├─ Data Fetching
+  │  ├─ NASA FIRMS VIIRS satellite data
+  │  ├─ Climate TRACE country emissions
+  │  ├─ Open-Meteo wind vectors (10m elevation)
+  │  └─ World Bank historical flaring
+  │
+  ├─ AI Processing
+  │  ├─ Gemini AI (natural language understanding)
+  │  ├─ Function-calling (autonomous tool usage)
+  │  └─ Map navigation commands (fly_to_location)
+  │
+  ├─ Processing Pipeline
+  │  ├─ Filter industrial flares
+  │  ├─ DBSCAN clustering (eps = 1 km)
+  │  ├─ Attribution to companies (5 km match)
+  │  ├─ Elvidge 2016 emission calculation
+  │  ├─ Anomaly detection (2σ threshold)
+  │  └─ Atmospheric plume modelling
+  │
+  └─ In-Memory Cache (1 hour TTL)
+
+             │
+             ▼
+
+<span class="hl">DATA LAYER</span>
+  ├─ NASA FIRMS API  (daily 375m thermal anomalies)
+  ├─ Well Database Excel Files
+  │  ├─ Saudi Aramco wells
+  │  ├─ Indian ONGC wells
+  │  ├─ Iranian / Iraqi / US (Permian, Marcellus) wells
+  ├─ Climate TRACE API  (country-level annual)
+  ├─ World Bank Flaring DB  (historical 1990–2024)
+  └─ Open-Meteo Forecast API  (real-time wind)</pre>
+    </div>
+
+    <h3>Quick-start command reference</h3>
+    <table class="qs-table">
+      <tr><td>Run Backend</td><td>Terminal 1</td><td>cd backend &amp;&amp; uvicorn main:app --reload --port 8000</td></tr>
+      <tr><td>Run Frontend</td><td>Terminal 2</td><td>cd frontend &amp;&amp; npm run dev</td></tr>
+      <tr><td>Open Dashboard</td><td>Browser</td><td>http://localhost:5173</td></tr>
+      <tr><td>API Docs</td><td>Browser</td><td>http://localhost:8000/docs</td></tr>
+      <tr><td>Get NASA Key</td><td>Web</td><td>https://firms.modaps.eosdis.nasa.gov/api/map_key/</td></tr>
+      <tr><td>Get Mapbox Token</td><td>Web</td><td>https://account.mapbox.com</td></tr>
+      <tr><td>Get Gemini Key</td><td>Web</td><td>https://ai.google.dev</td></tr>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 5: TECH STACK ── -->
+  <div class="section" id="tech-stack">
+    <div class="section-label">Section 5 — Technology Stack</div>
+    <h2>Technology Stack</h2>
+
+    <h3>Frontend</h3>
+    <div class="card-grid">
+      <div class="card accent-green">
+        <div class="tag blue">UI framework</div>
+        <h4>React 18.3.1</h4>
+        <p>Component-based UI. Key patterns: hooks (useState, useEffect), props, state management for map filters, date ranges, and company selection.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="tag blue">Build tool</div>
+        <h4>Vite 5.2.11</h4>
+        <p>Hot Module Replacement under 100ms. Modern ES6+ builds, code splitting. Dramatically faster than Webpack.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="tag blue">Mapping</div>
+        <h4>Mapbox GL JS 3.3.0</h4>
+        <p>3D globe projection, heatmaps, vector tiles, satellite imagery. Requires Mapbox access token. Free tier has generous limits.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="tag blue">Charts</div>
+        <h4>Recharts 2.12.7</h4>
+        <p>Line, bar, and area charts. Responsive, animated, composable. Used for trend charts, leaderboard bars, and historical data.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="tag blue">HTTP</div>
+        <h4>Axios 1.7.2</h4>
+        <p>API calls to backend. Automatic JSON parsing, error handling. Example: <code>axios.get('/api/flares?days=7')</code></p>
+      </div>
+      <div class="card accent-green">
+        <div class="tag blue">Icons</div>
+        <h4>Lucide React 0.378.0</h4>
+        <p>Lightweight SVG icon set. Used for alert icons, trending indicators, button icons throughout the UI.</p>
+      </div>
+    </div>
+
+    <h3>Backend</h3>
+    <div class="card-grid">
+      <div class="card accent-navy">
+        <div class="tag blue">Web framework</div>
+        <h4>FastAPI 0.111.0</h4>
+        <p>Async Python API. Auto-validation, auto-docs at <code>/docs</code>. Routes requests, validates parameters, returns JSON.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">Server</div>
+        <h4>Uvicorn 0.29.0</h4>
+        <p>ASGI server running FastAPI on port 8000. Handles CORS, async concurrency. Run with <code>--reload</code> for development.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">Data processing</div>
+        <h4>Pandas 2.2.2</h4>
+        <p>DataFrames for loading NASA CSV, filtering flares, grouping by company, merging satellite data with well locations.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">Numerics</div>
+        <h4>NumPy 1.26.4</h4>
+        <p>Vectorised operations, Haversine distance, Elvidge logarithm calculations, anomaly detection statistics. C-compiled for speed.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">ML / Clustering</div>
+        <h4>Scikit-learn 1.4.2</h4>
+        <p>DBSCAN clustering with Haversine metric groups satellite pixels into distinct flare sites (eps = 1 km).</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">Excel reading</div>
+        <h4>OpenPyXL 3.1.2</h4>
+        <p>Reads well databases from .xlsx files (Saudi Aramco, India, Iran, Iraq, US). Populates the KNOWN_WELLS list on startup.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">Async HTTP</div>
+        <h4>HTTPx 0.27.0</h4>
+        <p>Non-blocking API fetches for NASA FIRMS, oil prices, Open-Meteo wind. Handles timeouts and retries.</p>
+      </div>
+      <div class="card accent-navy">
+        <div class="tag blue">AI</div>
+        <h4>Google Generative AI 0.7.0+</h4>
+        <p>Gemini AI powers PetroCopilot. Function-calling lets the AI autonomously query backend endpoints and navigate the map.</p>
+      </div>
+    </div>
+
+    <h3>Data Sources</h3>
+    <table class="data-table">
+      <thead><tr><th>Source</th><th>Type</th><th>Update freq.</th><th>Cost</th><th>Auth required</th></tr></thead>
+      <tbody>
+        <tr><td>NASA FIRMS VIIRS NRT</td><td>Thermal anomalies 375m</td><td>Daily</td><td>Free</td><td>MAP_KEY registration</td></tr>
+        <tr><td>Climate TRACE v6</td><td>Country-level sector emissions</td><td>Annual</td><td>Free</td><td>None</td></tr>
+        <tr><td>Open-Meteo Forecast</td><td>Wind vectors 10m elevation</td><td>Hourly</td><td>Free</td><td>None</td></tr>
+        <tr><td>World Bank Gas Flaring DB</td><td>Historical 1990–2024</td><td>Annual</td><td>Free</td><td>None</td></tr>
+        <tr><td>Mapbox GL JS</td><td>Base map tiles &amp; rendering</td><td>Real-time</td><td>Free tier</td><td>Access token</td></tr>
+        <tr><td>Google Gemini AI</td><td>Natural language AI assistant</td><td>Real-time</td><td>Free tier (50 req/min)</td><td>API key</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 6: DATA FLOW ── -->
+  <div class="section" id="data-flow">
+    <div class="section-label">Section 6 — Pipeline</div>
+    <h2>Data Flow &amp; Processing Pipeline</h2>
+
+    <div class="steps">
+      <div class="step"><div class="step-body"><strong>Fetch</strong> — NASA FIRMS API pulls ~8 regions × 7 days. Each detection: lat, lon, brightness, FRP, timestamp. Result: DataFrame ~10,000 rows.</div></div>
+      <div class="step"><div class="step-body"><strong>Filter</strong> — Keep only industrial flares (type 2 = static land, type 3 = offshore). Brightness &gt; 1600 K OR FRP &gt; 1 MW. Removes agricultural fires and volcanoes. Result: ~5,000 rows.</div></div>
+      <div class="step"><div class="step-body"><strong>Cluster</strong> — DBSCAN with Haversine metric (eps = 1 km). Groups nearby detections into flare "sites". Example: 50 pixels in a 1 km area → 1 flare site. Result: ~500 unique flare sites.</div></div>
+      <div class="step"><div class="step-body"><strong>Attribute</strong> — Match each flare to a known well within 5 km. If no exact match, use basin probability weighting. Extracts company name, country, basin, confidence score.</div></div>
+      <div class="step"><div class="step-body"><strong>Calculate emissions</strong> — FRP → Gas Volume (Elvidge 2016 polynomial). Gas Volume → CO₂ (IPCC AR6 factor 2.86 kg/kg). Gas Volume → USD value (energy content × market price).</div></div>
+      <div class="step"><div class="step-body"><strong>Detect anomalies</strong> — For each cluster, compute 7-day rolling baseline + σ. Flag as anomaly if today &gt; baseline + 2σ. Assign severity: ALERT / HIGH / CRITICAL.</div></div>
+      <div class="step"><div class="step-body"><strong>Cache</strong> — Store result in memory for 1 hour (TTL). Subsequent requests return cached copy instantly.</div></div>
+      <div class="step"><div class="step-body"><strong>Serve</strong> — REST API returns GeoJSON FeatureCollection. Frontend fetches and renders on the global map.</div></div>
+    </div>
+
+    <h3>Example: One Flare's Journey</h3>
+    <div class="code-block">
+      <div class="code-label">Raw satellite detection</div>
+      <pre>Latitude:   27.1234  |  Longitude: 49.5678
+Brightness: 1850 K   |  FRP: 15.3 MW
+Date: 2026-05-05 14:23 UTC  |  Type: 2 (static land)</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">After clustering → after attribution</div>
+      <pre>Cluster ID: 42  |  Cluster size: 8 pixels
+Well: "Ghawar Well 12"  |  Company: Saudi Aramco
+Country: Saudi Arabia   |  Confidence: 0.92 (92%)</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">After emission calculation → served as JSON</div>
+      <pre>v_gas_scm:    82,150 scm/day
+co2_t_day:    187.3 tonnes CO₂/day
+co2_eq_t:     187.8 tonnes CO₂-eq
+gas_value_usd: 2,876 $/day
+is_anomaly:   false  |  anomaly_score: 1.4σ</pre>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 7: FEATURES ── -->
+  <div class="section" id="features">
+    <div class="section-label">Section 7 — Features</div>
+    <h2>All Features &amp; Visualizations</h2>
+
+    <h3>1. Global Map (3D Interactive)</h3>
+    <p>The full world on a 3D globe. Flare locations marked with sized circles. Heatmap layer uses blue→green→yellow→red gradient for FRP intensity. Background layer shows all known wells from Excel databases.</p>
+    <div class="card-grid">
+      <div class="card"><h4>Heatmap layer</h4><p>FRP intensity colour-coded. Blue = low, red = high. Adjustable opacity.</p></div>
+      <div class="card"><h4>Flare cluster circles</h4><p>Sized proportionally to FRP. Click for popup with full facility details.</p></div>
+      <div class="card"><h4>Known wells layer</h4><p>All wells from Excel database as background reference dots.</p></div>
+      <div class="card"><h4>Globe projection</h4><p>Earth renders as sphere at zoom-out. Rotate and tilt with right-click + drag.</p></div>
+    </div>
+
+    <h3>2. KPI Cards</h3>
+    <table class="data-table">
+      <thead><tr><th>Card</th><th>Metric</th><th>Formula / Source</th></tr></thead>
+      <tbody>
+        <tr><td>Active Flare Sites</td><td>Count of distinct active flare locations</td><td>DBSCAN cluster count</td></tr>
+        <tr><td>Daily CO₂ Emissions</td><td>Total CO₂ today in kilotonnes</td><td>Sum of all co2_eq_t ÷ 1000</td></tr>
+        <tr><td>Flare Detection Count</td><td>Individual satellite pixel events</td><td>Raw FIRMS row count after filter</td></tr>
+        <tr><td>Critical Alerts</td><td>Flare sites currently above 2σ baseline</td><td>is_anomaly = True count</td></tr>
+        <tr><td>Gas Value (Daily)</td><td>Market value of gas being burned</td><td>Elvidge V_gas × 38 MJ × Henry Hub price</td></tr>
+        <tr><td>Emissions Intensity</td><td>CO₂ per active flare site</td><td>total_co2 ÷ active_sites</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3. Company Leaderboard</h3>
+    <p>Top 20 emitting companies ranked by total CO₂. Each row shows company name, basin, country, CO₂ in kilotonnes, risk badge (🔴 High / 🟡 Medium / 🟢 Low), trend %, flare count, average FRP, and attribution confidence bar. Click any row to zoom the map to that company's wells.</p>
+
+    <div class="callout green">
+      <div class="callout-label">Risk level calculation</div>
+      <p>🔴 High: CO₂ &gt; 50 kt OR active anomaly present &nbsp;·&nbsp; 🟡 Medium: 10–50 kt &nbsp;·&nbsp; 🟢 Low: &lt; 10 kt</p>
+    </div>
+
+    <h3>4. Anomaly Intelligence Chart</h3>
+    <p>Line chart of daily CO₂ over the selected time window. Blue line = daily total. Dotted line = 7-day moving average. Red shaded zones = days with anomalies detected. Individual data points clickable for exact values.</p>
+
+    <h3>5. Alert Feed</h3>
+    <p>Scrollable real-time list of anomaly alerts, newest first. Each alert shows severity level, operator name, confidence score, coordinates, FRP in MW, and sigma score above baseline. Click to fly the map to that flare.</p>
+    <table class="data-table">
+      <thead><tr><th>Severity</th><th>Colour</th><th>Sigma threshold</th><th>Occurrence rate</th></tr></thead>
+      <tbody>
+        <tr><td>🔴 CRITICAL</td><td>Red</td><td>&gt; 3σ</td><td>&lt; 0.1% of observations</td></tr>
+        <tr><td>🟠 HIGH</td><td>Orange</td><td>2.5σ – 3σ</td><td>&lt; 0.6%</td></tr>
+        <tr><td>🟡 ALERT</td><td>Yellow</td><td>2σ – 2.5σ</td><td>~2–5%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6. Oil Price Ticker</h3>
+    <table class="data-table">
+      <thead><tr><th>Symbol</th><th>Represents</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>WTI (CL=F)</td><td>West Texas Intermediate — US light crude</td><td>US oil price benchmark</td></tr>
+        <tr><td>Brent</td><td>Brent crude — European standard</td><td>Global oil price benchmark</td></tr>
+        <tr><td>Natural Gas</td><td>Henry Hub benchmark</td><td>Price of gas that flares could sell for</td></tr>
+      </tbody>
+    </table>
+
+    <h3>7. CSV Export</h3>
+    <p>Downloads all current flare data with columns: Well/Basin, Company, Country, FRP_MW, CO2_t_day, Gas_Value_USD, Anomaly, Confidence, Date, Lat, Lon. Suitable for Excel, Power BI, and Tableau.</p>
+
+    <h3>8. Facility Card (Map Popup)</h3>
+    <p>Clicking any flare on the map opens a detailed card with all 50+ properties including: well name, company, FRP, brightness (Kelvin), CO₂ equivalent, gas value, cluster size, anomaly score, attribution confidence, matched well status, acquisition datetime, and full explainability fields (satellite source, emission model citation, CO₂ factor source, value method, attribution method).</p>
+
+    <h3>9. Compare Baseline 2024</h3>
+    <p>Real-time satellite data compared against official 2024 World Bank baseline, broken down by country. Shows current CO₂, baseline CO₂, percentage deviation, and status badge (elevated / normal / declining) per operator and country. Used for ESG reporting and regulatory compliance tracking.</p>
+
+    <h3>10. Correlation &amp; Comparative Analysis</h3>
+    <p>Multi-dimensional charts correlating oil price with flaring activity, wind patterns with detection rates, seasonal monthly trends, and company-vs-country breakdowns. Scatter plots, heatmaps (country × month matrix), and time-series overlays.</p>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 8: AI ASSISTANT ── -->
+  <div class="section" id="ai-assistant">
+    <div class="section-label">Section 8 — AI</div>
+    <h2>PetroCopilot — AI Assistant</h2>
+    <p class="lead">An AI-powered assistant powered by Google Gemini that understands natural language queries about emissions data and can autonomously query backend APIs and navigate the map.</p>
+
+    <div class="card-grid">
+      <div class="card accent-green"><div class="card-icon green">💬</div><h4>Natural language queries</h4><p>"Who are the top 5 CO₂ emitters?" "Show me critical alerts in Iraq."</p></div>
+      <div class="card accent-green"><div class="card-icon green">🔢</div><h4>Environmental calculations</h4><p>"Calculate EU CBAM carbon tax for 10,000 tonnes CO₂." "Annual CO₂ from Saudi Aramco."</p></div>
+      <div class="card accent-green"><div class="card-icon green">🗺️</div><h4>Map navigation</h4><p>"Fly to the Ghawar field." "Zoom to Nigeria." Returns fly_to_location action executed automatically.</p></div>
+      <div class="card accent-green"><div class="card-icon green">📈</div><h4>Correlation analysis</h4><p>"How does oil price correlate with flaring this week?" "Compare 2024 baseline to current."</p></div>
+    </div>
+
+    <h3>How it works</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body">User sends a message to <code>POST /api/chat</code></div></div>
+      <div class="step"><div class="step-body">Gemini AI receives the question plus all available tool definitions (getFlares, getAlerts, getSummary, etc.)</div></div>
+      <div class="step"><div class="step-body">AI autonomously decides which backend endpoints to call via function-calling</div></div>
+      <div class="step"><div class="step-body">Results returned to Gemini, which synthesises a natural language response</div></div>
+      <div class="step"><div class="step-body">Optional <code>fly_to_location</code> actions in the response are executed on the map</div></div>
+    </div>
+
+    <div class="callout amber">
+      <div class="callout-label">Setup requirement</div>
+      <p>Requires <code>GEMINI_API_KEY</code> in your <code>.env</code> file. Obtain free at https://ai.google.dev · Free tier: 50 requests/minute, sufficient for dashboard use.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 9: WIND & PLUME ── -->
+  <div class="section" id="wind-plume">
+    <div class="section-label">Section 9 — Atmospheric</div>
+    <h2>Wind Vector &amp; Atmospheric Plume Simulator</h2>
+    <p>PETRO fetches real-time 10-metre wind vectors from Open-Meteo (free, no API key) and models how emissions disperse downwind of each detected flare using Gaussian plume dispersion mathematics.</p>
+
+    <h3>How plume modelling works</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body">Get current wind u10 (eastward) and v10 (northward) components from Open-Meteo Forecast API</div></div>
+      <div class="step"><div class="step-body">Model Gaussian plume dispersion: source = flare location + FRP magnitude; stability class varies by time of day and surface type</div></div>
+      <div class="step"><div class="step-body">Calculate downwind concentration gradient at increasing distances</div></div>
+      <div class="step"><div class="step-body">Render as semi-transparent coloured contour layer on the map. Blue = low concentration, red = high.</div></div>
+    </div>
+
+    <h3>Controls</h3>
+    <table class="data-table">
+      <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Enable/disable toggle</td><td>Show or hide the plume visualisation layer</td></tr>
+        <tr><td>Opacity slider (0–100%)</td><td>Adjust transparency of the plume overlay</td></tr>
+        <tr><td>Wind vector display</td><td>Show/hide directional arrows at each flare site</td></tr>
+        <tr><td>Plume type selector</td><td>Gaussian (standard) plume model</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout green">
+      <div class="callout-label">Performance note</div>
+      <p>Wind is fetched for up to 80 flare sites per request. This is configurable via <code>MAX_WIND_SITES</code> in <code>backend/api/wind.py</code>.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 10: WORLD BANK ── -->
+  <div class="section" id="world-bank">
+    <div class="section-label">Section 10 — Historical Data</div>
+    <h2>World Bank Historical Flaring Data</h2>
+    <p>Integration with the World Bank Global Gas Flaring Reduction Programme database covering 1990–2024, providing 30+ years of country and location-level flaring history.</p>
+
+    <h3>Features</h3>
+    <div class="use-case-list">
+      <div class="use-case">
+        <div class="uc-icon navy">📉</div>
+        <div class="uc-body"><h4>Historical trends chart</h4><p>Global annual flaring in BCM from 1990–2024. Line, bar, and stacked-area views. Zoom to any date range.</p></div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon navy">🌍</div>
+        <div class="uc-body"><h4>Country history view</h4><p>Year-by-year flaring per country. Toggle countries on/off, annotate major regulatory events.</p></div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon green">📍</div>
+        <div class="uc-body"><h4>Location-level data</h4><p>Individual flare site historical records with operator name, asset type, and capacity.</p></div>
+      </div>
+      <div class="use-case">
+        <div class="uc-icon amber">📋</div>
+        <div class="uc-body"><h4>2024 baseline comparison</h4><p>Real-time satellite CO₂ vs. 2024 official baseline. Status badges (elevated / normal / declining) per country and operator. Used for ESG reporting and regulatory compliance.</p></div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Historical example (global BCM)</div>
+      <pre>1990: 180 BCM  (historical peak)
+2000: 160 BCM  (10% reduction)
+2010: 145 BCM  (further progress)
+2024: 145 BCM  (plateau — no improvement in 14 years)</pre>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 11: API REFERENCE ── -->
+  <div class="section" id="api-reference">
+    <div class="section-label">Section 11 — API Reference</div>
+    <h2>API Endpoints (Complete Reference)</h2>
+    <p>All endpoints served at <code>http://localhost:8000</code>. Swagger docs auto-generated at <code>/docs</code>.</p>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/flares</span></div>
+      <p>GeoJSON FeatureCollection of all detected flares with 50+ properties per feature.</p>
+      <ul class="param-list"><li><code>days</code> — 1–10: observation window</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/top_emitters</span></div>
+      <p>Companies ranked by CO₂. Includes rank, co2_eq_kt, flare_count, avg_frp, gas_value_usd, anomaly_flag, change_pct, efficiency_score, risk_level, attr_confidence.</p>
+      <ul class="param-list"><li><code>days</code> — 1–10 &nbsp;·&nbsp; <code>limit</code> — 1–50</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/alerts</span></div>
+      <p>Anomaly alerts sorted newest first. Each includes cluster_id, company, severity, anomaly_score (σ), co2_spike_pct, and attr_confidence.</p>
+      <ul class="param-list"><li><code>days</code> — 1–10 &nbsp;·&nbsp; <code>limit</code> — 1–200</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/trends</span></div>
+      <p>Daily aggregates: date_str, co2_kt, flares, gas_usd. One entry per day.</p>
+      <ul class="param-list"><li><code>days</code> — 1–10</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/pulse</span></div>
+      <p>Single global headline metric: total_kt, avg_daily_kt, today_kt, change_pct, trend label (normal / elevated / critical / declining).</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/summary</span></div>
+      <p>KPI summary: total_detections, active_sites, total_co2_kt, anomaly_count, countries_affected, detection_rate, total_gas_value_usd, unattributed_count.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/country_emissions</span></div>
+      <p>Country-level emissions from Climate TRACE (static, annual update). Useful for benchmarking PETRO satellite data against official sector reports.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/known_wells</span></div>
+      <p>GeoJSON of all wells in database with name, company, country, landmark, source file, and detected flag (currently has thermal anomaly).</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/oil_prices</span></div>
+      <p>WTI, Brent, and Henry Hub natural gas: current price, prev_close, change, change_pct, and 10-day price history array.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/wind</span></div>
+      <p>Flare data enriched with wind_speed_ms, wind_dir_deg, u10, v10, wind_gusts_ms from Open-Meteo. Powers the atmospheric plume simulator.</p>
+      <ul class="param-list"><li><code>days</code> — 1–5</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/wb_trends</span></div>
+      <p>World Bank global flaring history 1990–2024. Annual global_bcm with top countries per year.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/wb_country_history</span></div>
+      <p>Year-by-year flaring for a single country.</p>
+      <ul class="param-list"><li><code>country</code> — URL-encoded country name</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/wb_locations</span></div>
+      <p>Per-site flaring with field name, operator, and asset type for a given country and year.</p>
+      <ul class="param-list"><li><code>country</code>, <code>year</code></li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/wb_countries</span></div>
+      <p>All countries in the World Bank database with their available year ranges.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/compare_2024</span></div>
+      <p>Real-time vs. 2024 WB baseline by country. Includes change_pct, trend, and per-country status (elevated / normal / declining).</p>
+      <ul class="param-list"><li><code>days</code> — recent observation window</li></ul>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/api/facility/{cluster_id}</span></div>
+      <p>Complete details for a single flare site. Powers the facility card on map click.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">POST</span><span class="endpoint-path">/api/chat</span></div>
+      <p>PetroCopilot AI assistant. Send <code>{"message": "...", "days": 7}</code>. Returns <code>reply</code>, <code>actions</code> (map navigation), <code>confidence</code>, and <code>tool_calls</code> list.</p>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method">GET</span><span class="endpoint-path">/health</span></div>
+      <p>System health check: status, cache_keys, known_wells count, wells_with_coords count.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 12: ADVANCED CONCEPTS ── -->
+  <div class="section" id="advanced-concepts">
+    <div class="section-label">Section 12 — Science &amp; Algorithms</div>
+    <h2>Advanced Concepts</h2>
+
+    <h3 id="elvidge">DBSCAN Clustering Algorithm</h3>
+    <p>Groups nearby satellite pixels into distinct flare sites. Runs on all detection coordinates with eps = 1 km and min_samples = 1 using the Haversine metric to respect Earth's curvature.</p>
+
+    <div class="callout navy">
+      <div class="callout-label">Key parameters</div>
+      <p><strong>eps = 1 km</strong> — distance threshold (smaller = more clusters) &nbsp;·&nbsp; <strong>min_samples = 1</strong> — even single detections get a cluster ID &nbsp;·&nbsp; <strong>Haversine metric</strong> — accurate geographic distance on a sphere &nbsp;·&nbsp; Complexity: O(n log n) via ball-tree, &lt;1 second for 10,000 points</p>
+    </div>
+
+    <h3 id="elvidge">Elvidge 2016 Emission Model</h3>
+    <p>Peer-reviewed formula (Remote Sensing journal, 2016) converting satellite heat signature to natural gas volume. Based on measurements from oil fields in Kazakhstan, validated across multiple regions.</p>
+
+    <div class="formula-box"><code>log₁₀(V_gas) = 1.40 + 1.55 × log₁₀(FRP_MW)</code></div>
+    <div class="formula-box"><code>V_gas = 10^(1.40 + 1.55 × log₁₀(FRP))</code></div>
+
+    <p><strong>Example:</strong> FRP = 15.3 MW → log₁₀(15.3) = 1.185 → exponent = 3.237 → V_gas ≈ 1,726 scm/day</p>
+    <p><em>Limitations:</em> Assumes complete combustion, gas composition varies by region, atmospheric conditions affect observation, only valid for industrial flares.</p>
+
+    <h3 id="co2-calc">CO₂ Emission Calculation</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body"><strong>Gas volume → mass:</strong> mass_kg = volume_scm × 0.8 kg/m³ (standard natural gas density)</div></div>
+      <div class="step"><div class="step-body"><strong>Mass → CO₂:</strong> CO₂_kg = gas_mass_kg × 2.86 kg CO₂/kg gas (IPCC AR6 factor). Why 2.86? Natural gas ≈ 75% methane (CH₄). Burning: CH₄ + 2O₂ → CO₂ + 2H₂O. Molecular weights give ~2.86 kg CO₂ per kg gas.</div></div>
+      <div class="step"><div class="step-body"><strong>Regional correction:</strong> Middle East × 1.00, Niger Delta × 1.05, Permian Basin × 0.92, North Sea × 0.88, West Siberia × 1.02, Marcellus × 0.94</div></div>
+      <div class="step"><div class="step-body"><strong>Methane uplift:</strong> CO₂_eq = CO₂_base × 1.003 (adds ~0.3% for fugitive methane leaks at 28× warming potential)</div></div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-label">Validation check</div>
+      <p>Literature: ~200–300 kg CO₂ per MW of FRP. Our model: 3,956 kg ÷ 15.3 MW = 258 kg CO₂/MW ✓ (within expected range)</p>
+    </div>
+
+    <h3 id="gas-value">Gas-to-Market-Value Calculation</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body"><strong>Energy content:</strong> energy_MJ = volume_scm × 38 MJ/scm (Gross Calorific Value per ISO 6976)</div></div>
+      <div class="step"><div class="step-body"><strong>Convert to MMBtu:</strong> energy_MMBtu = energy_MJ ÷ 1055.06 (exact SI conversion)</div></div>
+      <div class="step"><div class="step-body"><strong>Market value:</strong> value_USD = energy_MMBtu × $3.50/MMBtu (Henry Hub benchmark, typical 2026 price. Configurable in emission_factors.py)</div></div>
+    </div>
+
+    <h3 id="anomaly">Anomaly Detection — The 2σ Rule</h3>
+    <p>Every flare has a 7-day rolling baseline of "normal" activity. A Z-score measures how far today deviates in units of historical standard deviation.</p>
+
+    <div class="formula-box"><code>z_score = (FRP_today − FRP_baseline) ÷ FRP_std_dev</code></div>
+
+    <p>If today = 21 MW, baseline = 12.4 MW, σ = 1.2 MW → z = 7.17. Probability of random occurrence: &lt;0.001%. The 2σ threshold means the anomaly will fire for events that naturally occur less than ~2% of the time.</p>
+
+    <table class="data-table">
+      <thead><tr><th>Sigma level</th><th>Severity</th><th>Natural occurrence rate</th></tr></thead>
+      <tbody>
+        <tr><td>&gt; 3σ</td><td>CRITICAL</td><td>&lt;0.1%</td></tr>
+        <tr><td>2.5σ – 3σ</td><td>HIGH</td><td>&lt;0.6%</td></tr>
+        <tr><td>2σ – 2.5σ</td><td>ALERT</td><td>~2–5%</td></tr>
+        <tr><td>&lt; 2σ</td><td>Normal</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="attribution">Attribution &amp; Confidence Scoring</h3>
+    <p>Two-stage pipeline matching satellite detections to company wells:</p>
+
+    <div class="card-grid">
+      <div class="card accent-green">
+        <div class="tag green">Stage 1</div>
+        <h4>Deterministic matching (exact)</h4>
+        <p>If satellite coordinate is within 5 km of a known well → match confirmed. Confidence 90–95%. Method: "Exact well match (5km)".</p>
+      </div>
+      <div class="card accent-amber">
+        <div class="tag amber">Stage 2</div>
+        <h4>Probabilistic matching (fallback)</h4>
+        <p>Identify basin from bounding box. Weight by each company's production share in that basin. Confidence 50–80%. Method: "Basin weighted probability".</p>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>Confidence range</th><th>Reliability</th><th>Recommended use</th></tr></thead>
+      <tbody>
+        <tr><td>80–100%</td><td>Very high</td><td>Can be reported as fact</td></tr>
+        <tr><td>50–80%</td><td>Moderate</td><td>Cross-reference before publishing</td></tr>
+        <tr><td>&lt; 50%</td><td>Low</td><td>Treat as indicative only</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 13: GETTING STARTED ── -->
+  <div class="section" id="getting-started">
+    <div class="section-label">Section 13 — Setup</div>
+    <h2>Getting Started</h2>
+
+    <h3>Prerequisites</h3>
+    <p>Computer running Windows, Mac, or Linux. Internet connection. NASA FIRMS MAP_KEY (free from firms.modaps.eosdis.nasa.gov). Mapbox Token (free tier from account.mapbox.com). Optional: Gemini API key for PetroCopilot (from ai.google.dev).</p>
+
+    <h3>Installation</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body"><strong>Get the code</strong> — <code>git clone &lt;repo-url&gt; &amp;&amp; cd petro</code></div></div>
+      <div class="step">
+        <div class="step-body"><strong>Create .env file</strong> in project root:
+          <div class="code-block" style="margin-top:0.5rem;"><pre>FIRMS_MAP_KEY=your_nasa_api_key_here
+VITE_MAPBOX_TOKEN=your_mapbox_token_here
+GEMINI_API_KEY=your_gemini_key_here</pre></div>
+        </div>
+      </div>
+      <div class="step"><div class="step-body"><strong>Backend</strong> — <code>cd backend &amp;&amp; pip install -r requirements.txt &amp;&amp; uvicorn main:app --reload --port 8000</code><br>Expected: <em>INFO: Uvicorn running on http://127.0.0.1:8000</em></div></div>
+      <div class="step"><div class="step-body"><strong>Frontend</strong> (new terminal) — <code>cd frontend &amp;&amp; npm install &amp;&amp; npm run dev</code><br>Expected: <em>Local: http://localhost:5173/</em></div></div>
+      <div class="step"><div class="step-body"><strong>Open browser</strong> at <code>http://localhost:5173</code>. Data loads in 30–60 seconds (NASA fetch). Map centres on Middle East where most flares occur.</div></div>
+    </div>
+
+    <h3>First-time orientation</h3>
+    <table class="data-table">
+      <thead><tr><th>Panel</th><th>Location</th><th>What to do first</th></tr></thead>
+      <tbody>
+        <tr><td>Leaderboard</td><td>Left sidebar</td><td>Click any company row to zoom map to its wells</td></tr>
+        <tr><td>Global map</td><td>Centre</td><td>Scroll to zoom, right-click-drag for 3D tilt, click a flare for details</td></tr>
+        <tr><td>Alert feed</td><td>Right sidebar</td><td>Click any alert to fly the map to that flare</td></tr>
+        <tr><td>KPI cards</td><td>Top row</td><td>Read the trend arrows — ↑ or ↓ vs. previous period</td></tr>
+        <tr><td>Trend chart</td><td>Bottom</td><td>Look for red-shaded anomaly days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 14: TROUBLESHOOTING ── -->
+  <div class="section" id="troubleshooting">
+    <div class="section-label">Section 14 — Troubleshooting</div>
+    <h2>Troubleshooting</h2>
+
+    <div class="issue-block">
+      <div class="issue-header">Backend: can't reach port 8000</div>
+      <div class="issue-body">Ensure you are in the <code>backend/</code> directory and run <code>uvicorn main:app --reload --port 8000</code>. If port 8000 is occupied, use <code>--port 8001</code> and update the frontend API base URL accordingly.</div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">FIRMS_MAP_KEY not found</div>
+      <div class="issue-body">Check that <code>.env</code> exists in the project root and is formatted without spaces: <code>FIRMS_MAP_KEY=your_key_here</code>. Run <code>cat .env</code> to verify.</div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">No module named 'fastapi'</div>
+      <div class="issue-body">Run <code>pip install -r requirements.txt</code> inside the <code>backend/</code> directory. For conda: <code>conda install -c conda-forge fastapi uvicorn pandas numpy scikit-learn</code></div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">Request timeout on NASA FIRMS data</div>
+      <div class="issue-body">NASA API can take 60+ seconds under load. Check your internet connection and retry in a few minutes. This is not a local error.</div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">All companies showing "Unknown"</div>
+      <div class="issue-body">Excel well files are missing from the project root. Verify presence of: <code>Saudi Aramco.xlsx</code>, <code>wells_india.xlsx</code>, <code>wells_iran.xlsx</code>, <code>wells_iraq.xlsx</code>, <code>wells_usa.xlsx</code></div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">Mapbox token invalid / map shows grey</div>
+      <div class="issue-body">Obtain a valid token from account.mapbox.com. Set <code>VITE_MAPBOX_TOKEN=your_token</code> in <code>.env</code> and restart the frontend with <code>npm run dev</code>.</div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">No anomalies detected</div>
+      <div class="issue-body">This is normal if flaring activity is stable. Anomalies naturally occur in only 2–5% of observations. Try a different date range or wait for actual spikes.</div>
+    </div>
+
+    <div class="issue-block">
+      <div class="issue-header">Dashboard slow / sluggish</div>
+      <div class="issue-body">Reduce date range to 7 days. Ensure internet speed &gt; 1 Mbps. Clear browser cache (Ctrl+Shift+Delete). Chrome is the fastest browser for Mapbox rendering.</div>
+    </div>
+
+    <h3>Debugging tools</h3>
+    <div class="code-block">
+      <div class="code-label">Backend health check</div>
+      <pre>curl http://localhost:8000/health
+# Expected: {"status":"ok","cache_keys":[...],"known_wells":258}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">Verbose backend logging</div>
+      <pre>export LOGLEVEL=DEBUG
+uvicorn main:app --reload --log-level debug</pre>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── SECTION 15: ADVANCED CONFIG ── -->
+  <div class="section" id="advanced-config">
+    <div class="section-label">Section 15 — Configuration</div>
+    <h2>Advanced Configuration</h2>
+
+    <h3>Clustering parameters</h3>
+    <div class="code-block">
+      <div class="code-label">backend/processing/clustering.py</div>
+      <pre>EPS_KM = 1.0        # Distance threshold (1 km standard)
+MIN_SAMPLES = 1     # Minimum points per cluster</pre>
+    </div>
+
+    <h3>Emission factors</h3>
+    <div class="code-block">
+      <div class="code-label">backend/processing/emission_factors.py</div>
+      <pre>ELVIDGE_A = 1.40                           # Polynomial coefficient
+ELVIDGE_B = 1.55                           # Polynomial coefficient
+EF_CO2_KG_PER_KG_GAS = 2.86               # IPCC AR6 factor
+GAS_DENSITY_KG_SCM = 0.8                  # Natural gas density
+BENCHMARK_GAS_PRICE_USD_PER_MMBTU = 3.5   # Henry Hub price
+
+REGIONAL_CORRECTION = {
+    "Permian Basin": 0.92,
+    "North Sea":     0.88,
+    "Niger Delta":   1.05,
+    "West Siberia":  1.02,
+    "Middle East":   1.00,
+    "Marcellus":     0.94,
+}</pre>
+    </div>
+
+    <h3>Anomaly threshold</h3>
+    <div class="code-block">
+      <div class="code-label">backend/processing/anomaly.py</div>
+      <pre>def detect_anomalies(df, sigma_threshold: float = 2.0):
+    # 2.0 = ~95% confidence · 3.0 = ~99% confidence</pre>
+    </div>
+
+    <h3>Cache TTL</h3>
+    <div class="code-block">
+      <div class="code-label">backend/main.py</div>
+      <pre>CACHE_TTL = 3600  # seconds
+# &lt;10 users: 3600 · 10-50 users: 1800 · 50+: 900 + db backend</pre>
+    </div>
+
+    <h3>Wind &amp; plume configuration</h3>
+    <div class="code-block">
+      <div class="code-label">backend/api/wind.py &amp; frontend/src/App.jsx</div>
+      <pre>MAX_WIND_SITES = 80          # Backend: max sites to fetch wind for
+
+const [plumeVisible, setPlumeVisible] = useState(false)
+const [plumeOpacity, setPlumeOpacity] = useState(0.82)</pre>
+    </div>
+
+    <h3>Adding new well databases</h3>
+    <div class="steps">
+      <div class="step"><div class="step-body">Create an Excel file in the project root: <code>my_wells.xlsx</code></div></div>
+      <div class="step"><div class="step-body">Format with columns: Well Name | Company | Country | Latitude | Longitude | Landmark | Status</div></div>
+      <div class="step"><div class="step-body">Restart the backend — files auto-load on startup. Duplicate coordinates are auto-deduplicated.</div></div>
+    </div>
+
+    <h3>Updating World Bank data</h3>
+    <p>Download the latest files from worldbank.org/en/programs/gasflaringreduction and place in <code>backend/data/</code> following the naming convention:</p>
+    <div class="code-block"><pre>wb_flaring_by_economy_YYYY_YYYY.xlsx
+wb_flaring_by_location_YYYY_YYYY.xlsx</pre></div>
+
+    <h3>Customising PetroCopilot</h3>
+    <div class="code-block">
+      <div class="code-label">backend/api/copilot.py</div>
+      <pre>SYSTEM_PROMPT = """
+You are PetroCopilot, an elite AI analyst embedded inside the
+Petro Carbon Emissions Intelligence Platform...
+"""  # Modify to change AI persona and behaviour</pre>
+    </div>
+  </div>
+
+  <!-- PRINT FOOTER -->
+  <div class="print-footer">
+    <div>
+      <button class="btn-print" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Export PDF
+      </button>
+      <p class="print-note" style="margin-top:0.5rem;">Optimised for A4/Letter · Use browser Print dialog → Save as PDF</p>
+    </div>
+    <div style="text-align:right;">
+      <p class="print-note">PETRO Carbon Emissions Intelligence Platform</p>
+      <p class="print-note">v2.2.0 · May 2026 · All data indicative — see disclaimer above</p>
+    </div>
+  </div>
+
+</div><!-- /doc-wrap -->
+</body>
+</html>
