@@ -18,12 +18,12 @@ import {
 } from './api/client'
 
 // ── Loading screen ──────────────────────────────────────────────────────────
-function LoadingScreen() {
+function LoadingScreen({ subtext }) {
   return (
     <div className="loading-screen">
       <div className="spinner" />
       <div className="loading-logo">PETRO</div>
-      <div className="loading-sub">Ingesting satellite + well data…</div>
+      <div className="loading-sub">{subtext || "Ingesting satellite + well data…"}</div>
     </div>
   )
 }
@@ -59,6 +59,7 @@ export default function App() {
   const [activeCountry, setActiveCountry] = useState('all')
   const [activeTab,     setActiveTab]     = useState('leaderboard')
   const [loading,       setLoading]       = useState(true)
+  const [loadingSubtext, setLoadingSubtext] = useState('Ingesting satellite + well data…')
   const [error,         setError]         = useState(null)
   const [wellDBOpen,    setWellDBOpen]    = useState(false)
   const [selectedSite,  setSelectedSite]  = useState(null)
@@ -81,7 +82,16 @@ export default function App() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
+    setLoadingSubtext('Ingesting satellite + well data…')
     setError(null)
+
+    // Set a timer to show cold-start alert if it takes > 5 seconds
+    const timer = setTimeout(() => {
+      setLoadingSubtext(
+        '📡 Server is starting up... Render\'s free tier goes to sleep after inactivity. Waking up the server takes about 50 seconds. Please wait!'
+      )
+    }, 5000)
+
     try {
       const [sumRes, flareRes, emitRes, alertRes, trendRes, priceRes] = await Promise.all([
         getSummary(days),
@@ -98,9 +108,10 @@ export default function App() {
       setTrends(trendRes.data)
       setOilPrices(priceRes.data)
     } catch (e) {
-      setError('Cannot reach the backend. Make sure Python API is running on port 8000.')
+      setError('Cannot reach the backend. Make sure the API is running and awake.')
       console.error(e)
     } finally {
+      clearTimeout(timer)
       setLoading(false)
     }
   }, [days])
@@ -161,7 +172,7 @@ export default function App() {
 
   return (
     <>
-      {loading && <LoadingScreen />}
+      {loading && <LoadingScreen subtext={loadingSubtext} />}
 
       <div className="app-shell">
         {/* ── Top bar ──────────────────────────────────────────────────── */}

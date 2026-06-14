@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // In production, use the full backend URL (Render). In dev, empty = Vite proxy.
 const BASE_URL = import.meta.env.VITE_API_BASE || ''
-const api = axios.create({ baseURL: BASE_URL, timeout: 30000 })
+const api = axios.create({ baseURL: BASE_URL, timeout: 90000 })
 
 export const getSummary          = (days = 5)           => api.get('/api/summary',          { params: { days } })
 export const getFlares           = (days = 5)           => api.get('/api/flares',            { params: { days } })
