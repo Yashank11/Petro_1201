@@ -5,11 +5,13 @@ No database. No Docker. Just: uvicorn main:app --reload
 """
 import os
 import time
-from typing import Optional
+import math
+from typing import Optional, Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -29,7 +31,35 @@ from data.worldbank_flaring import (
     get_all_countries,
 )
 
-app = FastAPI(title="Petro API", version="2.2.0", docs_url="/docs")
+
+def clean_nans(obj: Any) -> Any:
+    """Recursively convert NaN/Infinity float values to None for JSON compliance."""
+    if isinstance(obj, dict):
+        return {k: clean_nans(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [clean_nans(v) for v in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    elif hasattr(obj, "item"):  # numpy scalar
+        return clean_nans(obj.item())
+    return obj
+
+
+class SafeJSONResponse(JSONResponse):
+    """Custom JSONResponse that handles NaN and Infinity values safely."""
+    def render(self, content: Any) -> bytes:
+        safe_content = clean_nans(content)
+        return super().render(safe_content)
+
+
+app = FastAPI(
+    title="Petro API",
+    version="2.2.0",
+    docs_url="/docs",
+    default_response_class=SafeJSONResponse
+)
 
 app.add_middleware(
     CORSMiddleware,
