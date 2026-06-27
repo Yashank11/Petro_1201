@@ -19,18 +19,18 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# ── Gemini Configuration ────────────────────────────────────────────────────
+# ── Provider Keys ───────────────────────────────────────────────────────────
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 
 def _get_model():
     """Lazy-initialise the Gemini model (so the app still boots without a key)."""
     if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
-        raise HTTPException(
-            status_code=503,
-            detail="GEMINI_API_KEY is not configured. Add it to your .env file.",
-        )
+        raise Exception("GEMINI_API_KEY is not configured.")
     genai.configure(api_key=GEMINI_API_KEY)
     return genai.GenerativeModel(
         model_name="gemini-3.1-flash-lite",
@@ -424,92 +424,156 @@ async def chat(req: ChatRequest):
     PetroCopilot — Gemini multi-turn agent with function calling.
     Accepts a conversation history, runs the agentic loop (model → tool → model),
     and returns the final reply plus optional map actions for the frontend.
+    Fallback to Groq, Mistral, or OpenRouter if Gemini fails.
     """
-    model = _get_model()
+    # 1. Try Gemini
+    try:
+        model = _get_model()
 
-    # Build Gemini conversation history (excluding last user message)
-    history = []
-    for msg in req.messages[:-1]:
-        history.append({"role": msg.role, "parts": [msg.content]})
+        # Build Gemini conversation history (excluding last user message)
+        history = []
+        for msg in req.messages[:-1]:
+            history.append({"role": msg.role, "parts": [msg.content]})
 
-    # Inject current dashboard context into the very first system turn
-    if req.context:
-        ctx_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items()])
-        context_note = f"\n\n[Dashboard context: {ctx_str}]"
-    else:
-        context_note = ""
+        # Inject current dashboard context into the very first system turn
+        if req.context:
+            ctx_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items()])
+            context_note = f"\n\n[Dashboard context: {ctx_str}]"
+        else:
+            context_note = ""
 
-    # Last message is the current user query
-    user_query = req.messages[-1].content + context_note
+        # Last message is the current user query
+        user_query = req.messages[-1].content + context_note
 
-    chat_session = model.start_chat(history=history)
+        chat_session = model.start_chat(history=history)
 
-    map_action = None
-    tools_used = []
-    MAX_ITERATIONS = 6  # prevent runaway loops
+        map_action = None
+        tools_used = []
+        MAX_ITERATIONS = 6  # prevent runaway loops
 
-    current_message = user_query
+        current_message = user_query
 
-    for _iteration in range(MAX_ITERATIONS):
-        response = chat_session.send_message(current_message)
-        candidate = response.candidates[0]
+        for _iteration in range(MAX_ITERATIONS):
+            response = chat_session.send_message(current_message)
+            candidate = response.candidates[0]
 
-        # Check if model wants to call a function
-        function_calls = [
-            part.function_call
-            for part in candidate.content.parts
-            if hasattr(part, "function_call") and part.function_call.name
-        ]
-
-        if not function_calls:
-            # Model produced a text response — we're done
-            text_parts = [
-                part.text
+            # Check if model wants to call a function
+            function_calls = [
+                part.function_call
                 for part in candidate.content.parts
-                if hasattr(part, "text") and part.text
+                if hasattr(part, "function_call") and part.function_call.name
             ]
-            final_reply = " ".join(text_parts).strip()
-            return ChatResponse(reply=final_reply, mapAction=map_action, toolsUsed=tools_used)
 
-        # Execute all requested tool calls
-        tool_results = []
-        for fc in function_calls:
-            tool_name = fc.name
-            tool_args = dict(fc.args) if fc.args else {}
-            tools_used.append(tool_name)
+            if not function_calls:
+                # Model produced a text response — we're done
+                text_parts = [
+                    part.text
+                    for part in candidate.content.parts
+                    if hasattr(part, "text") and part.text
+                ]
+                final_reply = " ".join(text_parts).strip()
+                return ChatResponse(reply=final_reply, mapAction=map_action, toolsUsed=tools_used)
 
-            logger.info("PetroCopilot executing tool: %s(%s)", tool_name, tool_args)
+            # Execute all requested tool calls
+            tool_results = []
+            for fc in function_calls:
+                tool_name = fc.name
+                tool_args = dict(fc.args) if fc.args else {}
+                tools_used.append(tool_name)
 
-            try:
-                result = await _execute_tool(tool_name, tool_args)
-            except Exception as exc:
-                logger.error("Tool %s failed: %s", tool_name, exc)
-                result = {"error": str(exc)}
+                logger.info("PetroCopilot executing tool: %s(%s)", tool_name, tool_args)
 
-            # Extract map actions before feeding back to Gemini
-            if isinstance(result, dict) and result.get("__map_action"):
-                map_action = {k: v for k, v in result.items() if k != "__map_action"}
-                # Feed a simplified confirmation back to the model
-                result = {"status": "ok", "map_navigated_to": result.get("label", result.get("country", ""))}
+                try:
+                    result = await _execute_tool(tool_name, tool_args)
+                except Exception as exc:
+                    logger.error("Tool %s failed: %s", tool_name, exc)
+                    result = {"error": str(exc)}
 
-            tool_results.append(
-                genai.protos.Part(
-                    function_response=genai.protos.FunctionResponse(
-                        name=tool_name,
-                        response={"result": _json_safe(result)},
+                # Extract map actions before feeding back to Gemini
+                if isinstance(result, dict) and result.get("__map_action"):
+                    map_action = {k: v for k, v in result.items() if k != "__map_action"}
+                    # Feed a simplified confirmation back to the model
+                    result = {"status": "ok", "map_navigated_to": result.get("label", result.get("country", ""))}
+
+                tool_results.append(
+                    genai.protos.Part(
+                        function_response=genai.protos.FunctionResponse(
+                            name=tool_name,
+                            response={"result": _json_safe(result)},
+                        )
                     )
                 )
+
+            # Send tool results back so the model can continue
+            current_message = tool_results  # type: ignore[assignment]
+
+        # Fallback if we hit the iteration cap
+        return ChatResponse(
+            reply="I reached my analysis limit for this query. Please try a more specific question.",
+            mapAction=map_action,
+            toolsUsed=tools_used,
+        )
+
+    except Exception as gemini_exc:
+        logger.warning("Gemini failed, trying fallbacks. Error: %s", gemini_exc)
+
+        # Build message history in OpenAI format
+        if req.context:
+            ctx_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items()])
+            context_note = f"\n\n[Dashboard context: {ctx_str}]"
+        else:
+            context_note = ""
+        user_query = req.messages[-1].content + context_note
+        openai_messages = _to_openai_messages(req.messages, user_query)
+
+        # 2. Try Groq
+        if GROQ_API_KEY and GROQ_API_KEY != "your_groq_api_key_here":
+            logger.info("Trying Groq fallback...")
+            res = await _execute_openai_fallback(
+                provider_name="Groq",
+                api_key=GROQ_API_KEY,
+                endpoint="https://api.groq.com/openai/v1/chat/completions",
+                model="llama-3.3-70b-versatile",
+                messages=openai_messages
             )
+            if res:
+                return res
 
-        # Send tool results back so the model can continue
-        current_message = tool_results  # type: ignore[assignment]
+        # 3. Try Mistral
+        if MISTRAL_API_KEY and MISTRAL_API_KEY != "your_mistral_api_key_here":
+            logger.info("Trying Mistral fallback...")
+            res = await _execute_openai_fallback(
+                provider_name="Mistral",
+                api_key=MISTRAL_API_KEY,
+                endpoint="https://api.mistral.ai/v1/chat/completions",
+                model="mistral-small-latest",
+                messages=openai_messages
+            )
+            if res:
+                return res
 
-    # Fallback if we hit the iteration cap
-    return ChatResponse(
-        reply="I reached my analysis limit for this query. Please try a more specific question.",
-        mapAction=map_action,
-        toolsUsed=tools_used,
-    )
+        # 4. Try OpenRouter
+        if OPENROUTER_API_KEY and OPENROUTER_API_KEY != "your_openrouter_api_key_here":
+            logger.info("Trying OpenRouter fallback...")
+            res = await _execute_openai_fallback(
+                provider_name="OpenRouter",
+                api_key=OPENROUTER_API_KEY,
+                endpoint="https://openrouter.ai/api/v1/chat/completions",
+                model="google/gemini-2.5-flash",
+                messages=openai_messages,
+                extra_headers={
+                    "HTTP-Referer": "https://github.com/Yashank11/Petro_1201",
+                    "X-Title": "Petro Dashboard"
+                }
+            )
+            if res:
+                return res
+
+        # If all fail, raise the original exception
+        raise HTTPException(
+            status_code=500,
+            detail=f"All LLM providers failed. Original Gemini error: {str(gemini_exc)}"
+        )
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -527,3 +591,242 @@ def _json_safe(obj: Any) -> Any:
     if hasattr(obj, "item"):  # numpy scalar
         return obj.item()
     return obj
+
+
+# ── OpenAI-compatible fallback implementation ───────────────────────────────
+
+def _to_openai_messages(messages: list[ChatMessage], user_query: str) -> list[dict]:
+    """Convert Gemini ChatMessage history to OpenAI-compatible dict list."""
+    res = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for m in messages[:-1]:
+        role = "assistant" if m.role == "model" else m.role
+        res.append({"role": role, "content": m.content})
+    res.append({"role": "user", "content": user_query})
+    return res
+
+
+async def _execute_openai_fallback(
+    provider_name: str,
+    api_key: str,
+    endpoint: str,
+    model: str,
+    messages: list[dict],
+    extra_headers: dict = None
+) -> ChatResponse | None:
+    """Execute an agentic tool-calling loop using an OpenAI-compatible provider."""
+    import httpx
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    if extra_headers:
+        headers.update(extra_headers)
+
+    client_timeout = httpx.Timeout(45.0, connect=10.0)
+    current_messages = list(messages)
+    map_action = None
+    tools_used = []
+
+    async with httpx.AsyncClient(timeout=client_timeout) as client:
+        for _iteration in range(6):  # MAX_ITERATIONS = 6
+            payload = {
+                "model": model,
+                "messages": current_messages,
+                "tools": OPENAI_TOOLS
+            }
+            try:
+                resp = await client.post(endpoint, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    logger.error(
+                        "Fallback provider %s returned status %d: %s",
+                        provider_name, resp.status_code, resp.text
+                    )
+                    return None
+
+                data = resp.json()
+                choice = data.get("choices", [{}])[0]
+                message = choice.get("message", {})
+
+                # Check for tool calls
+                tool_calls = message.get("tool_calls")
+                if not tool_calls:
+                    reply = message.get("content", "") or ""
+                    return ChatResponse(
+                        reply=reply.strip(),
+                        mapAction=map_action,
+                        toolsUsed=tools_used
+                    )
+
+                # Append assistant message with tool_calls back to history
+                current_messages.append(message)
+
+                # Execute each tool call
+                for tc in tool_calls:
+                    tc_id = tc.get("id")
+                    func = tc.get("function", {})
+                    name = func.get("name")
+                    raw_args = func.get("arguments", "{}")
+
+                    try:
+                        args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+                    except Exception:
+                        args = {}
+
+                    tools_used.append(name)
+                    logger.info("Fallback %s executing tool: %s(%s)", provider_name, name, args)
+
+                    try:
+                        result = await _execute_tool(name, args)
+                    except Exception as exc:
+                        logger.error("Tool %s failed: %s", name, exc)
+                        result = {"error": str(exc)}
+
+                    # Extract map actions
+                    if isinstance(result, dict) and result.get("__map_action"):
+                        map_action = {k: v for k, v in result.items() if k != "__map_action"}
+                        result = {"status": "ok", "map_navigated_to": result.get("label", result.get("country", ""))}
+
+                    current_messages.append({
+                        "role": "tool",
+                        "tool_call_id": tc_id,
+                        "name": name,
+                        "content": json.dumps(_json_safe(result))
+                    })
+
+            except Exception as e:
+                logger.error("Exception in fallback provider %s: %s", provider_name, e)
+                return None
+
+    return None
+
+
+OPENAI_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_summary",
+            "description": "Get a global KPI summary: total detections, CO₂ kt, anomaly count, detection rate, gas value, countries affected.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Observation window in days (1-5). Default 5."}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_top_emitters",
+            "description": "Get the top N companies ranked by CO₂-equivalent emissions, with risk levels, flare counts, gas values, and change percentages.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Day window (1-5)."},
+                    "limit": {"type": "integer", "description": "Number of results (1-50). Default 10."}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_alerts",
+            "description": "Get active ESG anomaly alerts — flare sites where intensity is >2σ above baseline. Returns severity, spike %, company, basin, location.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Day window (1-5)."},
+                    "limit": {"type": "integer", "description": "Max alerts to return. Default 20."}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_oil_prices",
+            "description": "Get live Brent crude, WTI crude, and Natural Gas prices with 10-day history and daily change %.",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_compare_2024",
+            "description": "Compare current satellite-detected flaring rates (annualised BCM) against 2024 World Bank baseline for each country. Returns deviation %, trend label, and risk.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Day window (1-5)."}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_pulse",
+            "description": "Get the global emissions pulse — today's CO₂ kt versus rolling average, with trend label (NORMAL/ELEVATED/CRITICAL/DECLINING).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days": {"type": "integer", "description": "Day window (1-5)."}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_carbon_tax",
+            "description": "Calculate the estimated carbon tax liability for a given CO₂ quantity under a specified regulatory framework.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "co2_tonnes": {"type": "number", "description": "Quantity of CO₂-equivalent in metric tonnes."},
+                    "regime": {
+                        "type": "string",
+                        "description": "Regulatory regime: 'EU_CBAM', 'US_EPA_METHANE', 'CORSIA', or 'UK_ETS'."
+                    }
+                },
+                "required": ["co2_tonnes", "regime"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "fly_to_location",
+            "description": "Send a map navigation command to pan the Petro map to a specific location. Call this whenever the user mentions a country, basin, or field by name.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location_name": {"type": "string", "description": "The name of the location — basin, country, field, or city."},
+                    "lat": {"type": "number", "description": "Latitude of the target location."},
+                    "lon": {"type": "number", "description": "Longitude of the target location."},
+                    "zoom": {"type": "number", "description": "Mapbox zoom level (4-14). Use ~5 for countries, ~8 for basins, ~12 for fields."}
+                },
+                "required": ["location_name", "lat", "lon", "zoom"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "filter_map",
+            "description": "Apply a country filter to the map so only flares from that country are shown.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "country": {"type": "string", "description": "Country name to filter to, or 'all' to show all countries."}
+                },
+                "required": ["country"]
+            }
+        }
+    }
+]
