@@ -1,5 +1,5 @@
 import pandas as pd
-import google.generativeai as genai
+from google import genai
 import asyncio
 import json
 import os
@@ -10,20 +10,17 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 # --- CONFIGURATION ---
 API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-3.1-flash-lite" # As requested
+MODEL_NAME = "gemini-2.5-flash" # Updated model
 INPUT_FILE = "petro_flares1.csv"
 OUTPUT_FILE = "well_data_updated.csv"
 BATCH_SIZE = 50
 
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel(MODEL_NAME)
+client = genai.Client(api_key=API_KEY) if API_KEY else None
 
 async def process_batch(batch_df):
     """
     Sends 50 records to Gemini and returns the identified company names.
     """
-    # Convert data to a JSON string for the prompt
-    # We include Well/Basin, Country, Lat, Lon, and Landmark as requested
     records = batch_df.to_dict(orient='records')
     
     prompt = f"""
@@ -43,8 +40,10 @@ async def process_batch(batch_df):
     """
 
     try:
-        response = await model.generate_content_async(prompt)
-        # Clean the response in case the model returns markdown code blocks
+        response = await client.aio.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt
+        )
         clean_json = response.text.strip().replace('```json', '').replace('```', '')
         company_list = json.loads(clean_json)
         

@@ -11,7 +11,8 @@ import math
 import logging
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -27,16 +28,11 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 
-def _get_model():
-    """Lazy-initialise the Gemini model (so the app still boots without a key)."""
+def _get_client():
+    """Lazy-initialise the Gemini client (so the app still boots without a key)."""
     if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
         raise Exception("GEMINI_API_KEY is not configured.")
-    genai.configure(api_key=GEMINI_API_KEY)
-    return genai.GenerativeModel(
-        model_name="gemini-3.1-flash-lite",
-        system_instruction=SYSTEM_PROMPT,
-        tools=PETRO_TOOLS,
-    )
+    return genai.Client(api_key=GEMINI_API_KEY)
 
 
 # ── System prompt ───────────────────────────────────────────────────────────
@@ -64,114 +60,114 @@ Rules:
 # ── Tool schemas (Gemini function declarations) ──────────────────────────────
 
 PETRO_TOOLS = [
-    genai.protos.Tool(
+    types.Tool(
         function_declarations=[
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_summary",
                 description="Get a global KPI summary: total detections, CO₂ kt, anomaly count, detection rate, gas value, countries affected.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "days": genai.protos.Schema(
-                            type=genai.protos.Type.INTEGER,
+                        "days": types.Schema(
+                            type=types.Type.INTEGER,
                             description="Observation window in days (1-5). Default 5.",
                         )
                     },
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_top_emitters",
                 description="Get the top N companies ranked by CO₂-equivalent emissions, with risk levels, flare counts, gas values, and change percentages.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "days": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Day window (1-5)."),
-                        "limit": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Number of results (1-50). Default 10."),
+                        "days": types.Schema(type=types.Type.INTEGER, description="Day window (1-5)."),
+                        "limit": types.Schema(type=types.Type.INTEGER, description="Number of results (1-50). Default 10."),
                     },
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_alerts",
                 description="Get active ESG anomaly alerts — flare sites where intensity is >2σ above baseline. Returns severity, spike %, company, basin, location.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "days": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Day window (1-5)."),
-                        "limit": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Max alerts to return. Default 20."),
+                        "days": types.Schema(type=types.Type.INTEGER, description="Day window (1-5)."),
+                        "limit": types.Schema(type=types.Type.INTEGER, description="Max alerts to return. Default 20."),
                     },
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_oil_prices",
                 description="Get live Brent crude, WTI crude, and Natural Gas prices with 10-day history and daily change %.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={},
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_compare_2024",
                 description="Compare current satellite-detected flaring rates (annualised BCM) against 2024 World Bank baseline for each country. Returns deviation %, trend label, and risk.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "days": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Day window (1-5)."),
+                        "days": types.Schema(type=types.Type.INTEGER, description="Day window (1-5)."),
                     },
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="get_pulse",
                 description="Get the global emissions pulse — today's CO₂ kt versus rolling average, with trend label (NORMAL/ELEVATED/CRITICAL/DECLINING).",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "days": genai.protos.Schema(type=genai.protos.Type.INTEGER, description="Day window (1-5)."),
+                        "days": types.Schema(type=types.Type.INTEGER, description="Day window (1-5)."),
                     },
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="calculate_carbon_tax",
                 description="Calculate the estimated carbon tax liability for a given CO₂ quantity under a specified regulatory framework.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "co2_tonnes": genai.protos.Schema(
-                            type=genai.protos.Type.NUMBER,
+                        "co2_tonnes": types.Schema(
+                            type=types.Type.NUMBER,
                             description="Quantity of CO₂-equivalent in metric tonnes.",
                         ),
-                        "regime": genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
+                        "regime": types.Schema(
+                            type=types.Type.STRING,
                             description="Regulatory regime: 'EU_CBAM', 'US_EPA_METHANE', 'CORSIA', or 'UK_ETS'.",
                         ),
                     },
                     required=["co2_tonnes", "regime"],
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="fly_to_location",
                 description="Send a map navigation command to pan the Petro map to a specific location. Call this whenever the user mentions a country, basin, or field by name.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "location_name": genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
+                        "location_name": types.Schema(
+                            type=types.Type.STRING,
                             description="The name of the location — basin, country, field, or city.",
                         ),
-                        "lat": genai.protos.Schema(type=genai.protos.Type.NUMBER, description="Latitude of the target location."),
-                        "lon": genai.protos.Schema(type=genai.protos.Type.NUMBER, description="Longitude of the target location."),
-                        "zoom": genai.protos.Schema(type=genai.protos.Type.NUMBER, description="Mapbox zoom level (4-14). Use ~5 for countries, ~8 for basins, ~12 for fields."),
+                        "lat": types.Schema(type=types.Type.NUMBER, description="Latitude of the target location."),
+                        "lon": types.Schema(type=types.Type.NUMBER, description="Longitude of the target location."),
+                        "zoom": types.Schema(type=types.Type.NUMBER, description="Mapbox zoom level (4-14). Use ~5 for countries, ~8 for basins, ~12 for fields."),
                     },
                     required=["location_name", "lat", "lon", "zoom"],
                 ),
             ),
-            genai.protos.FunctionDeclaration(
+            types.FunctionDeclaration(
                 name="filter_map",
                 description="Apply a country filter to the map so only flares from that country are shown.",
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
                     properties={
-                        "country": genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
+                        "country": types.Schema(
+                            type=types.Type.STRING,
                             description="Country name to filter to, or 'all' to show all countries.",
                         ),
                     },
@@ -428,12 +424,17 @@ async def chat(req: ChatRequest):
     """
     # 1. Try Gemini
     try:
-        model = _get_model()
+        client = _get_client()
 
         # Build Gemini conversation history (excluding last user message)
         history = []
         for msg in req.messages[:-1]:
-            history.append({"role": msg.role, "parts": [msg.content]})
+            history.append(
+                types.Content(
+                    role=msg.role,
+                    parts=[types.Part.from_text(text=msg.content)]
+                )
+            )
 
         # Inject current dashboard context into the very first system turn
         if req.context:
@@ -445,7 +446,16 @@ async def chat(req: ChatRequest):
         # Last message is the current user query
         user_query = req.messages[-1].content + context_note
 
-        chat_session = model.start_chat(history=history)
+        config = types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            tools=PETRO_TOOLS,
+        )
+
+        chat_session = client.chats.create(
+            model="gemini-2.5-flash",
+            history=history,
+            config=config
+        )
 
         map_action = None
         tools_used = []
@@ -455,23 +465,13 @@ async def chat(req: ChatRequest):
 
         for _iteration in range(MAX_ITERATIONS):
             response = chat_session.send_message(current_message)
-            candidate = response.candidates[0]
 
             # Check if model wants to call a function
-            function_calls = [
-                part.function_call
-                for part in candidate.content.parts
-                if hasattr(part, "function_call") and part.function_call.name
-            ]
+            function_calls = response.function_calls
 
             if not function_calls:
                 # Model produced a text response — we're done
-                text_parts = [
-                    part.text
-                    for part in candidate.content.parts
-                    if hasattr(part, "text") and part.text
-                ]
-                final_reply = " ".join(text_parts).strip()
+                final_reply = (response.text or "").strip()
                 return ChatResponse(reply=final_reply, mapAction=map_action, toolsUsed=tools_used)
 
             # Execute all requested tool calls
@@ -496,11 +496,9 @@ async def chat(req: ChatRequest):
                     result = {"status": "ok", "map_navigated_to": result.get("label", result.get("country", ""))}
 
                 tool_results.append(
-                    genai.protos.Part(
-                        function_response=genai.protos.FunctionResponse(
-                            name=tool_name,
-                            response={"result": _json_safe(result)},
-                        )
+                    types.Part.from_function_response(
+                        name=tool_name,
+                        response={"result": _json_safe(result)},
                     )
                 )
 
