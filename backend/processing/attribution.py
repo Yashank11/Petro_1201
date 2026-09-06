@@ -80,29 +80,37 @@ def attribute_to_basin(df: pd.DataFrame) -> pd.DataFrame:
     rng = np.random.default_rng(99)
     df = df.copy()
 
-    companies     = []
-    well_names    = []
-    landmarks     = []
-    countries_out = []   # authoritative country per row
-    matched       = []
-    confidences   = []
-    alternatives  = []
+    companies        = []
+    well_names       = []
+    landmarks        = []
+    countries_out    = []   # authoritative country per row
+    matched          = []
+    confidences      = []
+    alternatives     = []
+    is_offshores     = []
+    commodities      = []
+    productions      = []
 
     for _, row in df.iterrows():
         lat = float(row.get("latitude",  0))
         lon = float(row.get("longitude", 0))
+        viirs_type = int(row.get("type", 2))
 
-        # ── Attempt exact well match ──────────────────────────────────────
-        well = find_nearest_well(lat, lon, radius_km=5.0)
+        # ── Attempt exact field match within 15 km ────────────────────────
+        well = find_nearest_well(lat, lon, radius_km=15.0)
         if well:
             companies.append(well["company"])
             well_names.append(well["name"])
-            landmarks.append(well["landmark"])
-            # Use the well's own country (from Excel), NOT the FIRMS bounding-box tag
+            landmarks.append(well.get("landmark", ""))
             countries_out.append(well["country"])
             matched.append(True)
-            confidences.append(0.95)
+            # Confidence scales slightly with proximity: 0.95 within 5km, down to 0.80 at 15km
+            conf = max(0.80, round(0.95 - (well.get("dist_km", 0) / 15.0) * 0.15, 2))
+            confidences.append(conf)
             alternatives.append(json.dumps([]))
+            is_offshores.append(bool(well.get("is_offshore", viirs_type == 3)))
+            commodities.append(well.get("commodity", "mixed"))
+            productions.append(well.get("production_kboed"))
             continue
 
         # ── Basin-based fallback ──────────────────────────────────────────
@@ -122,7 +130,6 @@ def attribute_to_basin(df: pd.DataFrame) -> pd.DataFrame:
             chosen_country = ctry_map[chosen_idx]
 
             # Top-2 alternatives (excluding chosen)
-            alts = []
             ranked = sorted(
                 [(names[i], round(norm_w[i], 3)) for i in range(len(names)) if i != chosen_idx],
                 key=lambda x: -x[1],
@@ -141,12 +148,18 @@ def attribute_to_basin(df: pd.DataFrame) -> pd.DataFrame:
         matched.append(False)
         confidences.append(confidence)
         alternatives.append(json.dumps(alts))
+        is_offshores.append(viirs_type == 3)
+        commodities.append("mixed")
+        productions.append(None)
 
-    df["company"]          = companies
-    df["well_name"]        = well_names
-    df["landmark"]         = landmarks
-    df["country"]          = countries_out   # overwrite bounding-box tag with authoritative country
-    df["matched_well"]     = matched
-    df["attr_confidence"]  = confidences
+    df["company"]           = companies
+    df["well_name"]         = well_names
+    df["landmark"]          = landmarks
+    df["country"]           = countries_out   # overwrite bounding-box tag with authoritative country
+    df["matched_well"]      = matched
+    df["attr_confidence"]   = confidences
     df["attr_alternatives"] = alternatives
+    df["is_offshore"]       = is_offshores
+    df["commodity"]         = commodities
+    df["production_kboed"]  = productions
     return df

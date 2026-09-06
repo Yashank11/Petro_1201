@@ -120,11 +120,13 @@ def _risk_level(co2_kt: float, anomaly_flag: bool) -> str:
 
 @app.get("/health")
 async def health():
+    offshore = sum(1 for w in KNOWN_WELLS if w.get("is_offshore"))
     return {
         "status": "ok",
         "cache_keys": list(_cache.keys()),
-        "known_wells": len(KNOWN_WELLS),
-        "wells_with_coords": len(COORD_WELLS),
+        "total_fields": len(KNOWN_WELLS),
+        "offshore_rigs": offshore,
+        "onshore_fields": len(KNOWN_WELLS) - offshore,
     }
 
 
@@ -157,6 +159,9 @@ async def get_flares(days: int = Query(5, ge=1, le=5)):
                 "well_name":        str(row.get("well_name", "")),
                 "landmark":         str(row.get("landmark", "")),
                 "matched_well":     bool(row.get("matched_well", False)),
+                "is_offshore":      bool(row.get("is_offshore", False)),
+                "production_kboed": row.get("production_kboed"),
+                "commodity":        str(row.get("commodity", "mixed")),
                 "country":          str(row.get("country", "Unknown")),
                 "date":             str(row.get("acq_date", ""))[:10],
                 "acq_datetime":     str(row.get("acq_date", ""))[:16],
@@ -172,7 +177,7 @@ async def get_flares(days: int = Query(5, ge=1, le=5)):
                 "emission_model":   "Elvidge 2016 — log₁₀(V) = 1.40 + 1.55×log₁₀(FRP)",
                 "co2_factor":       "IPCC AR6 — 0.8 kg/m³ × 2.86 kg/kg",
                 "value_method":     "Elvidge V_gas × 38 MJ/scm ÷ 1055 × $3.5/MMBtu (Henry Hub proxy)",
-                "attr_method":      "Exact well match (5km)" if bool(row.get("matched_well", False)) else "Basin weighted probability",
+                "attr_method":      "Exact field match (15km)" if bool(row.get("matched_well", False)) else "Basin weighted probability",
             },
         })
 
@@ -184,8 +189,7 @@ async def get_flares(days: int = Query(5, ge=1, le=5)):
 @app.get("/api/known_wells")
 async def get_known_wells():
     """
-    GeoJSON FeatureCollection of all known wells from Excel database.
-    Includes wells with and without coordinates (no-coord wells omitted from geometry).
+    GeoJSON FeatureCollection of all 7,110 verified global oil & gas fields and offshore platforms (GEM GOGET).
     """
     cached = _get("known_wells")
     if cached:
@@ -193,7 +197,7 @@ async def get_known_wells():
 
     features = []
     for w in KNOWN_WELLS:
-        if not w.get("has_coords"):
+        if w.get("lon") is None or w.get("lat") is None:
             continue
         features.append({
             "type": "Feature",
@@ -202,12 +206,18 @@ async def get_known_wells():
                 "coordinates": [w["lon"], w["lat"]],
             },
             "properties": {
-                "name":     w["name"],
-                "company":  w["company"],
-                "country":  w["country"],
-                "landmark": w["landmark"],
-                "source":   w["source"],
-                "detected": False,
+                "id":               w.get("id", ""),
+                "name":             w.get("name", ""),
+                "company":          w.get("company", ""),
+                "country":          w.get("country", ""),
+                "commodity":        w.get("commodity", "mixed"),
+                "status":           w.get("status", "operating"),
+                "onshore":          w.get("onshore", True),
+                "is_offshore":      w.get("is_offshore", False),
+                "production_kboed": w.get("production_kboed"),
+                "landmark":         w.get("landmark", ""),
+                "source":           w.get("source", "Global Energy Monitor (GEM) - GOGET (CC BY 4.0)"),
+                "detected":         False,
             },
         })
 

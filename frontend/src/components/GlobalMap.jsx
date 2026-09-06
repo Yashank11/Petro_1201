@@ -266,17 +266,18 @@ const GlobalMap = forwardRef(function GlobalMap(
         const props  = e.features[0].properties
         const coords = e.features[0].geometry.coordinates
         if (popupRef.current) popupRef.current.remove()
+        const isOffshore = props.is_offshore === true || props.is_offshore === 'true'
+        const prod = props.production_kboed ? `${props.production_kboed} kboed` : null
         const html = `
-          <div class="popup-title" style="color:rgba(130,160,200,0.9)">${props.name || 'Unknown Well'}</div>
-          <div style="color:var(--text-muted);font-size:10px;font-weight:600;margin-bottom:8px;letter-spacing:0.5px;">◯ NO THERMAL ANOMALY DETECTED</div>
-          <div class="popup-row"><span>Company</span><span>${props.company || '—'}</span></div>
-          <div class="popup-row"><span>Country</span><span>${props.country || '—'}</span></div>
-          <div class="popup-row"><span>Landmark</span><span>${props.landmark || '—'}</span></div>
-          <div class="popup-row"><span>Coords</span><span>${coords[1].toFixed(4)}°, ${coords[0].toFixed(4)}°</span></div>
-          <div style="margin-top:8px;font-size:9px;color:var(--text-muted)">Source: ${props.source || '—'}</div>
-          <div style="margin-top:4px;font-size:9px;color:var(--text-muted);font-style:italic">
-            ⚠ Company names approximated from public data.
+          <div class="popup-title" style="color:rgba(130,160,200,0.9)">${props.name || 'Unknown Asset'}</div>
+          <div style="color:var(--text-muted);font-size:10px;font-weight:600;margin-bottom:8px;letter-spacing:0.5px;">
+            ${isOffshore ? '⚓ OFFSHORE RIG / PLATFORM' : '🏭 ONSHORE FIELD'}
           </div>
+          <div class="popup-row"><span>Operator</span><span>${props.company || '—'}</span></div>
+          <div class="popup-row"><span>Country</span><span>${props.country || '—'}</span></div>
+          ${prod ? `<div class="popup-row"><span>Capacity</span><span>${prod}</span></div>` : ''}
+          <div class="popup-row"><span>Coords</span><span>${coords[1].toFixed(4)}°, ${coords[0].toFixed(4)}°</span></div>
+          <div style="margin-top:8px;font-size:9px;color:var(--text-muted)">Source: Global Energy Monitor (GOGET)</div>
         `
         popupRef.current = new mapboxgl.Popup({ maxWidth: '280px' })
           .setLngLat(coords)
