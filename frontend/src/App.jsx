@@ -72,6 +72,10 @@ export default function App() {
   const [knownWells, setKnownWells] = useState(null)
   const [oilPrices,  setOilPrices]  = useState(null)
 
+  // Mobile navigation state ('map' | 'analytics' | 'emitters' | 'trends')
+  const [mobileTab,      setMobileTab]      = useState('map')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   // Plume simulator state
   const [wind,         setWind]         = useState([])
   const [windLoading,  setWindLoading]  = useState(false)
@@ -177,11 +181,32 @@ export default function App() {
       <div className="app-shell">
         {/* ── Top bar ──────────────────────────────────────────────────── */}
         <header className="topbar">
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(o => !o)}
+            aria-label="Toggle filter menu"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {mobileMenuOpen ? (
+                <>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </>
+              )}
+            </svg>
+          </button>
+
           <div className="topbar-logo">
             <div className="dot" />
             PETRO
           </div>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400 }}>
+          <span className="topbar-subtitle">
             Carbon Emissions Intelligence
           </span>
 
@@ -190,18 +215,19 @@ export default function App() {
 
           <div className="topbar-spacer" />
           <div className="live-pill">Live</div>
-          <div className="topbar-badge">VIIRS NRT</div>
+          <div className="topbar-badge badge-desktop">VIIRS NRT</div>
           <div className="topbar-badge" style={{ color: 'var(--orange)', borderColor: 'rgba(255,107,43,0.35)', background: 'var(--orange-dim)' }}>
-            {days}d window
+            {days}d
           </div>
           {summary?.unattributed_count > 0 && (
-            <div className="topbar-badge" style={{ color: '#f59e0b', borderColor: 'rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.1)' }}>
-              ⚠ {summary.unattributed_count} Unattributed
+            <div className="topbar-badge badge-desktop" style={{ color: '#f59e0b', borderColor: 'rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.1)' }}>
+              ⚠ {summary.unattributed_count}
             </div>
           )}
           <button
             onClick={() => exportFlaresCSV(flares)}
             title="Export current flares as CSV"
+            className="topbar-action-btn badge-desktop"
             style={{
               background: 'var(--green-dim)', border: '1px solid rgba(0,255,136,0.35)',
               color: 'var(--green)', borderRadius: 6, padding: '4px 10px',
@@ -213,6 +239,7 @@ export default function App() {
           </button>
           <button
             onClick={fetchAll}
+            className="topbar-action-btn"
             style={{
               background: 'var(--cyan-dim)', border: '1px solid var(--border-glow)',
               color: 'var(--cyan)', borderRadius: 6, padding: '4px 12px',
@@ -220,22 +247,49 @@ export default function App() {
               letterSpacing: 0.5,
             }}
           >
-            ↻ Refresh
+            ↻
           </button>
         </header>
+
+        {/* Mobile Navigation Dock */}
+        <nav className="mobile-nav-dock">
+          {[
+            { id: 'map',       icon: '🌍', label: 'Globe' },
+            { id: 'analytics', icon: '📊', label: 'KPI Intel' },
+            { id: 'emitters',  icon: '⚡', label: 'Emitters', badge: alerts.length || null },
+            { id: 'trends',    icon: '📈', label: 'History' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              className={`mobile-dock-btn ${mobileTab === tab.id ? 'active' : ''}`}
+              onClick={() => setMobileTab(tab.id)}
+            >
+              <span className="dock-icon">{tab.icon}</span>
+              <span className="dock-label">{tab.label}</span>
+              {tab.badge && <span className="dock-badge">{tab.badge}</span>}
+            </button>
+          ))}
+        </nav>
+
+        {/* Mobile backdrop for sidebar drawer */}
+        {mobileMenuOpen && (
+          <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+        )}
 
         {/* ── Left sidebar ──────────────────────────────────────────────── */}
         <Sidebar
           days={days}
           onDaysChange={setDays}
           activeCountry={activeCountry}
-          onCountryChange={setActiveCountry}
+          onCountryChange={(c) => { setActiveCountry(c); setMobileMenuOpen(false) }}
           summary={summary}
-          onOpenWellDB={() => setWellDBOpen(true)}
+          onOpenWellDB={() => { setWellDBOpen(true); setMobileMenuOpen(false) }}
+          mobileOpen={mobileMenuOpen}
+          onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
         {/* ── Globe map ─────────────────────────────────────────────────── */}
-        <main className="map-container">
+        <main className={`map-container mobile-view-section ${mobileTab === 'map' ? 'mobile-active' : ''}`}>
           {error && (
             <div className="map-overlay top-left" style={{ pointerEvents: 'auto', maxWidth: 320 }}>
               <div style={{ color: 'var(--red)', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>⚠ Backend Offline</div>
@@ -244,18 +298,12 @@ export default function App() {
           )}
 
           {/* Global Emissions Pulse — floating above the map */}
-          <div style={{
-            position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 5, pointerEvents: 'none',
-          }}>
+          <div className="map-pulse-wrap">
             <EmissionsPulse />
           </div>
 
           {/* Plume Simulator Controls — floating top-left of map */}
-          <div style={{
-            position: 'absolute', top: 12, left: 12,
-            zIndex: 6, pointerEvents: 'auto',
-          }}>
+          <div className="map-plume-wrap">
             <PlumeControls
               visible={plumeVisible}
               onToggle={() => setPlumeVisible(v => !v)}
@@ -277,9 +325,8 @@ export default function App() {
           />
         </main>
 
-
-        {/* ── Right panel ───────────────────────────────────────────────── */}
-        <aside className="right-panel">
+        {/* ── Right panel (Emitters & Alerts) ────────────────────────────── */}
+        <aside className={`right-panel mobile-view-section ${mobileTab === 'emitters' ? 'mobile-active' : ''}`}>
           <nav className="tab-nav">
             <button
               className={`tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
@@ -317,8 +364,8 @@ export default function App() {
           )}
         </aside>
 
-        {/* ── Bottom panel ──────────────────────────────────────────────── */}
-        <section className="bottom-panel">
+        {/* ── Bottom panel (KPIs & Trends) ──────────────────────────────── */}
+        <section className={`bottom-panel mobile-view-section ${mobileTab === 'analytics' ? 'mobile-active' : ''}`}>
           <KPICards summary={summary} loading={loading} trends={trends} alerts={alerts} />
 
           <div className="trend-panel">
@@ -339,7 +386,7 @@ export default function App() {
         </section>
 
         {/* ── World Bank Historical Flaring (2012-2025) ───────────────── */}
-        <section className="bottom-panel-2">
+        <section className={`bottom-panel-2 mobile-view-section ${mobileTab === 'trends' ? 'mobile-active' : ''}`}>
           <div style={{
             padding: '4px 0 8px',
             borderBottom: '1px solid var(--border)',

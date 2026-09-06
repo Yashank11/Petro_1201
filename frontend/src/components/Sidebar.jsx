@@ -12,9 +12,19 @@ export default function Sidebar({
   activeCountry, onCountryChange,
   summary,
   onOpenWellDB,
+  mobileOpen = false,
+  onCloseMobile,
 }) {
   return (
-    <div className="sidebar">
+    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+      {/* Mobile Drawer Header */}
+      <div className="sidebar-mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="dot" style={{ width: 8, height: 8 }} />
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.5px' }}>Filters & Controls</span>
+        </div>
+        <button className="sidebar-close-btn" onClick={onCloseMobile} aria-label="Close sidebar">✕</button>
+      </div>
       {/* Data window */}
       <div style={{ marginBottom: 4 }}>
         <div className="section-label">Data Window</div>
@@ -117,6 +127,6 @@ export default function Sidebar({
         Data cached 1 hr<br />
         <span style={{ color: 'var(--cyan)' }}>VIIRS NRT latency ≈ 3 hrs</span>
       </div>
-    </div>
+    </aside>
   )
 }
