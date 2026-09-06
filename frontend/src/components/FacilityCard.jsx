@@ -243,7 +243,7 @@ export default function FacilityCard({ site, flares, onClose }) {
               <AltsList alts={alts} />
               {!isMatched && (
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic' }}>
-                  ⚠ Company names approximated from publicly available resources.
+                  ⚠ Concession basin weighted estimate (outside 15km field radius).
                 </div>
               )}
             </div>

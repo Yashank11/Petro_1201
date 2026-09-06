@@ -4,6 +4,7 @@
 
 🌐 **[Live Dashboard](https://Yashank11.github.io/Petro_1201/)** &nbsp;|&nbsp; 📡 **[Backend API](https://petro-backend.onrender.com/docs)** &nbsp;|&nbsp; 📂 **[Repository](https://github.com/Yashank11/Petro_1201)**
 
+
 ---
 
 ## ✨ Key Features
@@ -250,6 +251,12 @@ petro/
 | **IPCC AR6** | CO₂ emission factor (2.86 kg CO₂/kg CH₄) | [ipcc.ch](https://www.ipcc.ch) |
 | **Open-Meteo** | Wind speed/direction for plume modeling | [open-meteo.com](https://open-meteo.com) |
 | **Yahoo Finance** | Live crude oil & natural gas prices | [finance.yahoo.com](https://finance.yahoo.com) |
+
+---
+
+## ⚠️ Disclaimer
+
+Infrastructure and operating company data are sourced from **Global Energy Monitor (GEM GOGET, CC BY 4.0)**. Satellite flaring detections are captured in near-real-time by **NASA FIRMS VIIRS (375m NRT)**, with emissions estimated via the Elvidge 2016 model and IPCC AR6 conversion factors. This platform is intended for research, educational, and ESG awareness purposes.
 
 ---
 

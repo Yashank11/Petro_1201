@@ -102,7 +102,7 @@ export default function AlertFeed({ alerts, loading }) {
         borderTop: '1px solid var(--border)',
         fontStyle: 'italic',
       }}>
-        ⚠ Company names are approximated from publicly available resources and may not reflect actual operational attribution.
+        Source: Global Energy Monitor (GEM GOGET) & NASA FIRMS VIIRS.
       </div>
     </div>
   )

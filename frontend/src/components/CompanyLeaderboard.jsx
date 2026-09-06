@@ -102,7 +102,7 @@ export default function CompanyLeaderboard({ emitters, loading, onSelect }) {
         padding: '8px 14px', fontSize: 9, color: 'var(--text-muted)',
         borderTop: '1px solid var(--border)', fontStyle: 'italic',
       }}>
-        ⚠ Company names approximated from public data.
+        Operator attribution: Global Energy Monitor (GEM GOGET) & NASA VIIRS.
       </div>
     </div>
   )

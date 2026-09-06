@@ -399,9 +399,9 @@ export default function App() {
 
       {/* ── Disclaimer footer ─────────────────────────────────────────── */}
       <div className="disclaimer-footer">
-        ⚠ Company names are approximated from publicly available resources and may not reflect actual operational attribution.
-        All emissions estimates are derived from satellite thermal anomaly data using the Elvidge 2016 model and IPCC AR6 conversion factors.
-        This platform is intended for research and awareness purposes only.
+        Infrastructure and operator data sourced from Global Energy Monitor (GEM GOGET, CC BY 4.0).
+        Emissions estimated from NASA FIRMS VIIRS satellite thermal anomaly data using the Elvidge 2016 model and IPCC AR6 factors.
+        Platform intended for research, awareness, and ESG analytics.
       </div>
     </>
   )
