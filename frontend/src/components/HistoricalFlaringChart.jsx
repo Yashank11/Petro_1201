@@ -67,7 +67,7 @@ export default function HistoricalFlaringChart() {
   const years = trends.map(t => t.year)
 
   // ── Scale helpers ─────────────────────────────────────────────────────────
-  const xScale = (yr) => PAD.left + ((yr - (years[0] || 2012)) / Math.max(1, (years[years.length - 1] || 2024) - (years[0] || 2012))) * innerW
+  const xScale = (yr) => PAD.left + ((yr - (years[0] || 2012)) / Math.max(1, (years[years.length - 1] || 2025) - (years[0] || 2012))) * innerW
   const yScaleGlobal = (() => {
     const max = Math.max(...trends.map(t => t.global_bcm), 1)
     return (v) => PAD.top + innerH - (v / max) * innerH
@@ -139,7 +139,7 @@ export default function HistoricalFlaringChart() {
           </button>
         ))}
         <span style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-          Source: World Bank GFMR / NOAA VIIRS • 2012–2024
+          Source: World Bank GFMR / NOAA VIIRS • 2012–2025
         </span>
       </div>
 

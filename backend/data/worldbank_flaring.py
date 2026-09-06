@@ -18,7 +18,11 @@ import os
 import openpyxl
 
 _DATA_DIR = os.path.dirname(__file__)
-_ECONOMY_FILE  = os.path.join(_DATA_DIR, "wb_flaring_by_economy_2012_2024.xlsx")
+_ECONOMY_FILE = (
+    os.path.join(_DATA_DIR, "wb_flaring_by_economy_2012_2025.xlsx")
+    if os.path.exists(os.path.join(_DATA_DIR, "wb_flaring_by_economy_2012_2025.xlsx"))
+    else os.path.join(_DATA_DIR, "wb_flaring_by_economy_2012_2024.xlsx")
+)
 _LOCATION_FILE = os.path.join(_DATA_DIR, "wb_flaring_by_location_2012_2024.xlsx")
 
 # ── Country name normalisation (World Bank name → our app name) ───────────────

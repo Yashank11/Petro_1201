@@ -338,7 +338,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── World Bank Historical Flaring (2012-2024) ───────────────── */}
+        {/* ── World Bank Historical Flaring (2012-2025) ───────────────── */}
         <section className="bottom-panel-2">
           <div style={{
             padding: '4px 0 8px',
@@ -350,7 +350,7 @@ export default function App() {
           }}>
             <span>Historical Flaring</span>
             <span style={{ color: 'var(--cyan)', fontSize: 9, fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
-              2012 – 2024 • World Bank
+              2012 – 2025 • World Bank
             </span>
           </div>
           <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>

@@ -39,9 +39,9 @@
 - **ESG Alert Feed** — Real-time anomaly alerts with severity (medium / high / critical)
 
 ### 📈 Historical Analysis
-- **World Bank Flaring Trends (2012–2024)** — Annual BCM data from NOAA / Payne Institute
+- **World Bank Flaring Trends (2012–2025)** — Official annual BCM data from World Bank GFMR / NOAA VIIRS (including the 2026 GFMR Report release covering 2025)
 - **Country Deep-Dive** — Per-country historical flaring with interactive charts
-- **2024 Baseline Comparison** — Live satellite rate vs World Bank annual baseline with deviation analysis
+- **2025 Baseline Comparison** — Live satellite rate vs World Bank annual baseline with automated deviation analysis and surge alerts
 
 ### 💰 Market Correlation
 - **Live Oil Prices** — WTI, Brent, Natural Gas from Yahoo Finance (15-min cache)

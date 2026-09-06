@@ -199,7 +199,7 @@ function InsightCard({ d }) {
 }
 
 // ── Summary observations ──────────────────────────────────────────────────────
-function generateObservations(data) {
+function generateObservations(data, baselineYear = 2025) {
   if (!data.length) return []
   const obs = []
 
@@ -212,15 +212,15 @@ function generateObservations(data) {
   const topLive = [...data].sort((a, b) => b.live_bcm_annual - a.live_bcm_annual)[0]
 
   if (surges.length)
-    obs.push({ icon: '⚡', color: '#ff3366', text: `${surges.map(d=>d.country).join(', ')} ${surges.length===1?'is':'are'} experiencing extreme flaring surges — far above their 2024 annual baseline.` })
+    obs.push({ icon: '⚡', color: '#ff3366', text: `${surges.map(d=>d.country).join(', ')} ${surges.length===1?'is':'are'} experiencing extreme flaring surges — far above their ${baselineYear} annual baseline.` })
   if (elevated.length)
-    obs.push({ icon: '📈', color: '#ff6b2b', text: `${elevated.map(d=>d.country).join(', ')} ${elevated.length===1?'is':'are'} running above the 2024 pace — monitor for escalation.` })
+    obs.push({ icon: '📈', color: '#ff6b2b', text: `${elevated.map(d=>d.country).join(', ')} ${elevated.length===1?'is':'are'} running above the ${baselineYear} pace — monitor for escalation.` })
   if (declining.length)
     obs.push({ icon: '📉', color: '#00ff88', text: `${declining.map(d=>d.country).join(', ')} ${declining.length===1?'shows':'show'} encouraging below-baseline flaring — potential improvement.` })
   if (onPace.length)
-    obs.push({ icon: '≈', color: '#00d4ff', text: `${onPace.map(d=>d.country).join(', ')} ${onPace.length===1?'is':'are'} tracking closely with the 2024 baseline.` })
+    obs.push({ icon: '≈', color: '#00d4ff', text: `${onPace.map(d=>d.country).join(', ')} ${onPace.length===1?'is':'are'} tracking closely with the ${baselineYear} baseline.` })
   if (maxDev)
-    obs.push({ icon: '🔎', color: '#a855f7', text: `Largest divergence: ${maxDev.country} at ${maxDev.deviation_pct > 0 ? '+' : ''}${maxDev.deviation_pct.toFixed(0)}% vs 2024 baseline.` })
+    obs.push({ icon: '🔎', color: '#a855f7', text: `Largest divergence: ${maxDev.country} at ${maxDev.deviation_pct > 0 ? '+' : ''}${maxDev.deviation_pct.toFixed(0)}% vs ${baselineYear} baseline.` })
   if (topLive)
     obs.push({ icon: '🏭', color: '#ffcc00', text: `Highest active flaring intensity: ${topLive.country} at ${topLive.live_bcm_annual.toFixed(2)} BCM/yr (annualised rate from ${topLive.flare_count} detections).` })
 
@@ -243,7 +243,8 @@ export default function CompareBaseline2024({ days = 5 }) {
       .finally(() => setLoading(false))
   }, [days])
 
-  const observations  = useMemo(() => generateObservations(data), [data])
+  const baselineYear  = useMemo(() => data[0]?.baseline_year || 2025, [data])
+  const observations  = useMemo(() => generateObservations(data, baselineYear), [data, baselineYear])
   const maxAbs        = useMemo(() => Math.max(...data.map(d => Math.abs(d.deviation_pct)), 1), [data])
   const maxBCM        = useMemo(() => Math.max(...data.map(d => Math.max(d.live_bcm_annual, d.wb_2024_bcm)), 1), [data])
 
@@ -258,7 +259,7 @@ export default function CompareBaseline2024({ days = 5 }) {
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, flexDirection: 'column', gap: 16 }}>
       <div className="spinner" />
-      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Computing vs 2024 World Bank baseline…</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Computing vs World Bank baseline…</div>
     </div>
   )
   if (error) return <div style={{ textAlign: 'center', padding: 40, color: 'var(--red)', fontSize: 12 }}>{error}</div>
@@ -277,10 +278,10 @@ export default function CompareBaseline2024({ days = 5 }) {
         {/* Title */}
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, color: '#e2e8f0', letterSpacing: '-0.2px' }}>
-            🛢 Live vs 2024 Baseline
+            🛢 Live vs {baselineYear} Baseline
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-            Current VIIRS flaring rate (annualised) vs World Bank 2024 country BCM — {data.length} countries matched
+            Current VIIRS flaring rate (annualised) vs World Bank {baselineYear} country BCM — {data.length} countries matched
           </div>
         </div>
 
@@ -357,7 +358,7 @@ export default function CompareBaseline2024({ days = 5 }) {
                 fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0,
               }}>
                 <span>Country</span>
-                <span style={{ textAlign: 'center' }}>← Below 2024   |   Above 2024 →</span>
+                <span style={{ textAlign: 'center' }}>← Below {baselineYear}   |   Above {baselineYear} →</span>
                 <span style={{ textAlign: 'right' }}>Δ %</span>
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: '4px 24px 16px' }}>
@@ -376,7 +377,7 @@ export default function CompareBaseline2024({ days = 5 }) {
               }}>
                 <span>Country</span>
                 <span style={{ textAlign: 'right' }}>Live BCM</span>
-                <span style={{ textAlign: 'right' }}>WB 2024</span>
+                <span style={{ textAlign: 'right' }}>WB {baselineYear}</span>
                 <span style={{ textAlign: 'right' }}>Δ BCM</span>
                 <span>Status</span>
               </div>
@@ -423,10 +424,10 @@ export default function CompareBaseline2024({ days = 5 }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
                 <div style={{ width: 14, height: 10, background: 'rgba(0,212,255,0.5)', borderRadius: 2 }} />
-                2024 WB Baseline
+                {baselineYear} WB Baseline
               </div>
               <div style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                Showing top {groupedTop.length} countries by 2024 baseline volume
+                Showing top {groupedTop.length} countries by {baselineYear} baseline volume
               </div>
             </div>
             {/* Bars */}
@@ -453,7 +454,7 @@ export default function CompareBaseline2024({ days = 5 }) {
           <div style={{ height: '100%', overflowY: 'auto', padding: '16px 24px' }}>
             {insightTop.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)', fontSize: 13 }}>
-                All tracked countries are on-pace with 2024 baseline ✅
+                All tracked countries are on-pace with {baselineYear} baseline ✅
               </div>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>

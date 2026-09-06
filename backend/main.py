@@ -658,9 +658,10 @@ async def compare_2024(days: int = Query(5, ge=1, le=5)):
     live_agg["live_bcm_annual"] = live_agg["live_gas_m3"] * scale / 1e9
     live_agg["live_bcm_annual"] = live_agg["live_bcm_annual"].round(4)
 
-    # ── Load 2024 WB baseline ────────────────────────────────────────────────
-    from data.worldbank_flaring import _ECONOMY
-    wb_2024 = {country: year_data.get(2024, 0.0) for country, year_data in _ECONOMY.items()}
+    # ── Load latest WB baseline (2025, falling back to 2024) ─────────────
+    from data.worldbank_flaring import _ECONOMY, YEARS
+    baseline_year = 2025 if 2025 in YEARS else 2024
+    wb_baseline   = {country: year_data.get(baseline_year, 0.0) for country, year_data in _ECONOMY.items()}
 
     # ── Country name bridge (live → WB names) ───────────────────────────────
     # The live data uses our normalised names; WB data uses the same normalised
@@ -676,11 +677,11 @@ async def compare_2024(days: int = Query(5, ge=1, le=5)):
         if country in COUNTRY_BRIDGE:
             continue
 
-        wb_bcm = wb_2024.get(country, None)
+        wb_bcm = wb_baseline.get(country, None)
         # Try partial case-insensitive match if exact fails
         if wb_bcm is None:
             cl = country.lower()
-            for k, v in wb_2024.items():
+            for k, v in wb_baseline.items():
                 if cl == k.lower() or cl in k.lower() or k.lower() in cl:
                     wb_bcm = v
                     break
@@ -696,38 +697,40 @@ async def compare_2024(days: int = Query(5, ge=1, le=5)):
 
         # ── Human-readable insight ───────────────────────────────────────────
         if dev_pct > 50:
-            insight     = f"⚡ Extreme surge — {abs(dev_pct):.0f}% above 2024 annual baseline"
+            insight     = f"⚡ Extreme surge — {abs(dev_pct):.0f}% above {baseline_year} annual baseline"
             trend_label = "SURGE"
             risk        = "critical"
         elif dev_pct > 15:
-            insight     = f"📈 Above baseline — current rate {abs(dev_pct):.0f}% higher than 2024"
+            insight     = f"📈 Above baseline — current rate {abs(dev_pct):.0f}% higher than {baseline_year}"
             trend_label = "ELEVATED"
             risk        = "high"
         elif dev_pct > 5:
-            insight     = f"↑ Slightly elevated — {abs(dev_pct):.0f}% above 2024 pace"
+            insight     = f"↑ Slightly elevated — {abs(dev_pct):.0f}% above {baseline_year} pace"
             trend_label = "ABOVE"
             risk        = "medium"
         elif dev_pct < -50:
-            insight     = f"✅ Massive reduction — {abs(dev_pct):.0f}% below 2024 annual rate"
+            insight     = f"✅ Massive reduction — {abs(dev_pct):.0f}% below {baseline_year} annual rate"
             trend_label = "LOW"
             risk        = "low"
         elif dev_pct < -15:
-            insight     = f"📉 Below baseline — current rate {abs(dev_pct):.0f}% lower than 2024"
+            insight     = f"📉 Below baseline — current rate {abs(dev_pct):.0f}% lower than {baseline_year}"
             trend_label = "DECLINING"
             risk        = "low"
         elif dev_pct < -5:
-            insight     = f"↓ Slightly below — {abs(dev_pct):.0f}% below 2024 pace"
+            insight     = f"↓ Slightly below — {abs(dev_pct):.0f}% below {baseline_year} pace"
             trend_label = "BELOW"
             risk        = "low"
         else:
-            insight     = f"≈ On-pace with 2024 baseline (within ±5%)"
+            insight     = f"≈ On-pace with {baseline_year} baseline (within ±5%)"
             trend_label = "ON PACE"
             risk        = "low"
 
         result.append({
             "country":         country,
             "live_bcm_annual": live,
-            "wb_2024_bcm":     round(wb, 4),
+            "wb_2024_bcm":     round(wb, 4),  # backwards compatibility with frontend key
+            "wb_baseline_bcm": round(wb, 4),
+            "baseline_year":   baseline_year,
             "delta_bcm":       delta,
             "deviation_pct":   dev_pct,
             "trend_label":     trend_label,

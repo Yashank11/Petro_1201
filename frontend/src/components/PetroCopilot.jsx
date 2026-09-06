@@ -6,7 +6,7 @@ const QUICK_PROMPTS = [
   { label: 'Top Emitters', text: 'Who are the top 5 CO₂ emitters right now?' },
   { label: 'Active Alerts', text: 'Show me all critical flaring alerts today.' },
   { label: 'Oil Prices', text: 'What are the live Brent and WTI crude prices?' },
-  { label: 'USA Baseline', text: 'How does USA current flaring compare to the 2024 baseline?' },
+  { label: 'USA Baseline', text: 'How does USA current flaring compare to the 2025 baseline?' },
   { label: 'Ghawar Field', text: 'Fly to the Ghawar oil field in Saudi Arabia.' },
   { label: 'Carbon Tax', text: 'Calculate EU CBAM tax for 10,000 tonnes of CO₂.' },
   { label: 'Global Pulse', text: 'What is the global emissions pulse status today?' },
