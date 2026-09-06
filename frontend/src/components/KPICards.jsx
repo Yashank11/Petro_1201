@@ -72,7 +72,7 @@ export default function KPICards({ summary, loading, trends = [], alerts = [], f
   const trendClass = (pct) => pct > 5 ? 'up' : pct < -5 ? 'down' : 'neutral'
 
   return (
-    <>
+    <div className="kpi-cards-grid">
       {/* 1. Active Flare Sites */}
       <div className="kpi-card">
         <div className="kpi-label">Active Flare Sites</div>
@@ -159,6 +159,6 @@ export default function KPICards({ summary, loading, trends = [], alerts = [], f
         </div>
         <div className="kpi-status">≈ {gasAnnualStr}/year</div>
       </div>
-    </>
+    </div>
   )
 }

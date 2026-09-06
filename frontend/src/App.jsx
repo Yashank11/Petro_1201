@@ -153,6 +153,18 @@ export default function App() {
     return () => window.removeEventListener('copilot:filter', handler)
   }, [])
 
+  // Trigger Mapbox resize when switching back to the map tab on mobile
+  useEffect(() => {
+    if (mobileTab === 'map') {
+      const timer = setTimeout(() => {
+        if (mapRef.current?.__resize) {
+          mapRef.current.__resize()
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [mobileTab])
+
   // Filter flares by active country only (basin filter removed)
   const visibleFlares = !flares ? null : {
     ...flares,

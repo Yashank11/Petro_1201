@@ -16,20 +16,27 @@ const GlobalMap = forwardRef(function GlobalMap(
   const [loaded, setLoaded] = useState(false)
   const [mapInstance, setMapInstance] = useState(null)
 
-  // ── Expose flyTo via ref ───────────────────────────────────────────────────
+  // ── Expose flyTo and resize via ref ─────────────────────────────────────────
   const flyTo = useCallback((lon, lat, zoom = 12) => {
     if (mapRef.current) {
       mapRef.current.flyTo({ center: [lon, lat], zoom, duration: 1800, essential: true })
     }
   }, [])
 
+  const resize = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.resize()
+    }
+  }, [])
+
   useEffect(() => {
     if (ref && containerRef.current) {
       containerRef.current.__flyTo = flyTo
+      containerRef.current.__resize = resize
       if (typeof ref === 'function') ref(containerRef.current)
       else ref.current = containerRef.current
     }
-  }, [flyTo, ref])
+  }, [flyTo, resize, ref])
 
   // ── Initialise map once ───────────────────────────────────────────────────
   useEffect(() => {
