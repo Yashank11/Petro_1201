@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { getPulse } from '../api/client'
 
 const TREND_COLORS = {
   critical: { color: '#ff3366', bg: 'rgba(255,51,102,0.12)', label: 'CRITICAL' },
@@ -14,9 +13,8 @@ export default function EmissionsPulse() {
 
   useEffect(() => {
     const load = () =>
-      fetch(`${BASE}/api/pulse?days=5`)
-        .then(r => r.json())
-        .then(setPulse)
+      getPulse(5)
+        .then(r => setPulse(r.data))
         .catch(() => {})
     load()
     const id = setInterval(load, 60_000)

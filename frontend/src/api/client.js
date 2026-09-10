@@ -23,9 +23,10 @@ export const getWBCountries      = ()                   => api.get('/api/wb_coun
 // Present vs 2024 baseline comparison
 export const getCompare2024      = (days = 5)           => api.get('/api/compare_2024',       { params: { days } })
 
-// PetroCopilot — AI agent chat
+// PyraCopilot — AI agent chat
 export const postChat = (messages, context = {}) =>
   api.post('/api/chat', { messages, context }, { timeout: 60000 })
+export const chatWithCopilot = postChat
 
 // Plume Simulator — wind vectors per active flare site
 export const getWind = (days = 5) => api.get('/api/wind', { params: { days } })

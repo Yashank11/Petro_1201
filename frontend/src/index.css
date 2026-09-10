@@ -1931,21 +1931,24 @@ input[type="range"] {
     overflow-x: hidden;
   }
 
-  /* ── Mobile Topbar ─────────────────────────────────────────────────────── */
+  /* ── Mobile Topbar (Strict single row) ─────────────────────────────────── */
   .topbar {
     position: sticky;
     top: 0;
     z-index: 100;
-    min-height: 48px;
-    padding: 6px 12px;
-    gap: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(5, 8, 16, 0.96);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    overflow-x: hidden;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    padding: 0 10px !important;
+    gap: 6px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(5, 8, 16, 0.96) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid var(--border) !important;
+    overflow: hidden !important;
   }
 
   .mobile-menu-btn {
@@ -1968,12 +1971,20 @@ input[type="range"] {
   }
 
   .topbar-logo {
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 800;
     gap: 6px;
     flex-shrink: 0;
+    letter-spacing: 0.5px;
   }
   .topbar-subtitle {
-    display: none;
+    display: none !important;
+  }
+  .topbar-spacer {
+    display: none !important;
+  }
+  .live-pill {
+    display: none !important;
   }
 
   /* Desktop elements hidden on narrow mobile */
@@ -1982,29 +1993,41 @@ input[type="range"] {
   }
 
   .oil-ticker {
-    padding: 0 4px;
-    gap: 4px;
-    border: none;
-    flex-shrink: 1;
-    overflow: hidden;
+    padding: 0 4px !important;
+    gap: 4px !important;
+    border: none !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
   }
   .oil-ticker-label {
-    display: none;
+    display: none !important;
   }
   .oil-chip {
-    padding: 2px 6px;
+    padding: 2px 5px !important;
+    white-space: nowrap !important;
+    border-radius: 4px !important;
+    gap: 3px !important;
+  }
+  .oil-chip-label {
+    display: none !important;
   }
   .oil-chip:last-child {
-    display: none; /* Hide NatGas on mobile so WTI and Brent fit nicely */
+    display: none !important; /* Hide NatGas on mobile */
   }
   .oil-chip-price {
-    font-size: 11px;
+    font-size: 10.5px !important;
+  }
+  .oil-chip-change {
+    font-size: 9px !important;
   }
 
   .topbar-badge {
-    padding: 2px 7px;
-    font-size: 10px;
-    flex-shrink: 0;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+    flex-shrink: 0 !important;
   }
 
   /* ── Mobile Navigation Dock (Floating Cyber Dock) ──────────────────────── */
@@ -2140,39 +2163,62 @@ input[type="range"] {
     animation: modal-in 0.2s ease-out;
   }
 
-  /* ── Map Container on Mobile ───────────────────────────────────────────── */
+  /* ── Map Container on Mobile (Explicit block dimensions for Mapbox GL) ── */
   .map-container.mobile-active {
-    height: calc(100vh - 48px - 74px);
-    position: relative;
-    overflow: hidden;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    height: calc(100vh - 50px - 72px) !important;
+    min-height: calc(100vh - 50px - 72px) !important;
+    overflow: hidden !important;
   }
 
-  .map-pulse-wrap {
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 320px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .pulse-widget {
-    min-width: unset;
-    width: 100%;
-    padding: 4px 10px;
-    justify-content: space-between;
+  .global-map-wrapper {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 
   .map-plume-wrap {
-    top: 50px;
-    left: 8px;
-    max-width: calc(100vw - 16px);
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+    z-index: 20 !important;
   }
 
   .plume-controls {
-    min-width: unset;
-    width: 180px;
+    min-width: 200px !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .plume-controls-header {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+
+  .plume-site-count {
+    display: none !important; /* Hide to prevent text collision */
+  }
+
+  .map-pulse-wrap {
+    position: absolute !important;
+    top: 52px !important;
+    left: 10px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    z-index: 20 !important;
+  }
+
+  .pulse-widget {
+    min-width: unset !important;
+    width: auto !important;
+    padding: 4px 10px !important;
   }
 
   /* ── Bottom Panel (KPI & Analytics Tab) on Mobile ──────────────────────── */

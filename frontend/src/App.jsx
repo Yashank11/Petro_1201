@@ -22,7 +22,7 @@ function LoadingScreen({ subtext }) {
   return (
     <div className="loading-screen">
       <div className="spinner" />
-      <div className="loading-logo">PETRO</div>
+      <div className="loading-logo">PYRA</div>
       <div className="loading-sub">{subtext || "Ingesting satellite + well data…"}</div>
     </div>
   )
@@ -49,7 +49,7 @@ function exportFlaresCSV(flares) {
   const blob = new Blob([csv], { type: 'text/csv' })
   const url  = URL.createObjectURL(blob)
   const a    = document.createElement('a')
-  a.href = url; a.download = `petro_flares_${new Date().toISOString().slice(0,10)}.csv`
+  a.href = url; a.download = `pyra_flares_${new Date().toISOString().slice(0,10)}.csv`
   a.click(); URL.revokeObjectURL(url)
 }
 
@@ -216,7 +216,7 @@ export default function App() {
 
           <div className="topbar-logo">
             <div className="dot" />
-            PETRO
+            PYRA
           </div>
           <span className="topbar-subtitle">
             Carbon Emissions Intelligence

@@ -84,7 +84,7 @@ export default function PetroCopilot({ mapRef, summary, days = 5 }) {
   const [messages,  setMessages]  = useState([
     {
       role: 'model',
-      content: `👋 **Welcome to PetroCopilot.**\n\nI'm your AI analyst for the Petro Carbon Intelligence platform. Ask me anything about live flaring data, emissions, regulatory risks, or oil prices — or click one of the quick prompts below.`,
+      content: `👋 **Welcome to PyraCopilot.**\n\nI'm your AI analyst for the Pyra Carbon Intelligence platform. Ask me anything about live flaring data, emissions, regulatory risks, or oil prices — or click one of the quick prompts below.`,
       toolsUsed: [],
     },
   ])
@@ -182,7 +182,7 @@ export default function PetroCopilot({ mapRef, summary, days = 5 }) {
   const clearChat = () => {
     setMessages([{
       role: 'model',
-      content: `👋 **Welcome to PetroCopilot.**\n\nI'm your AI analyst for the Petro Carbon Intelligence platform. Ask me anything about live flaring data, emissions, regulatory risks, or oil prices — or click one of the quick prompts below.`,
+      content: `👋 **Welcome to PyraCopilot.**\n\nI'm your AI analyst for the Pyra Carbon Intelligence platform. Ask me anything about live flaring data, emissions, regulatory risks, or oil prices — or click one of the quick prompts below.`,
       toolsUsed: [],
     }])
     setInput('')
@@ -192,11 +192,11 @@ export default function PetroCopilot({ mapRef, summary, days = 5 }) {
     <>
       {/* ── Toggle button ──────────────────────────────────────────────── */}
       <button
-        id="petrocopilot-toggle"
+        id="pyracopilot-toggle"
         className={`copilot-toggle ${open ? 'open' : ''}`}
         onClick={() => setOpen(o => !o)}
-        title="PetroCopilot AI"
-        aria-label="Toggle PetroCopilot AI panel"
+        title="PyraCopilot AI"
+        aria-label="Toggle PyraCopilot AI panel"
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -211,12 +211,12 @@ export default function PetroCopilot({ mapRef, summary, days = 5 }) {
           </svg>
         )}
         {!open && (
-          <span className="copilot-toggle-label">PetroCopilot</span>
+          <span className="copilot-toggle-label">PyraCopilot</span>
         )}
       </button>
 
       {/* ── Sliding panel ──────────────────────────────────────────────── */}
-      <div className={`copilot-panel ${open ? 'copilot-panel--open' : ''}`} role="dialog" aria-label="PetroCopilot AI Assistant">
+      <div className={`copilot-panel ${open ? 'copilot-panel--open' : ''}`} role="dialog" aria-label="PyraCopilot AI Assistant">
 
         {/* Header */}
         <div className="copilot-header">
@@ -230,7 +230,7 @@ export default function PetroCopilot({ mapRef, summary, days = 5 }) {
               </svg>
             </div>
             <div>
-              <div className="copilot-header-title">PetroCopilot</div>
+              <div className="copilot-header-title">PyraCopilot</div>
               <div className="copilot-header-sub">Gemini 2.0 Flash · Function Calling</div>
             </div>
           </div>

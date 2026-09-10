@@ -38,6 +38,18 @@ const GlobalMap = forwardRef(function GlobalMap(
     }
   }, [flyTo, resize, ref])
 
+  // ── Auto-resize observer to guarantee WebGL canvas adapts to mobile viewport ──
+  useEffect(() => {
+    if (!containerRef.current) return
+    const ro = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
+    })
+    ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [])
+
   // ── Initialise map once ───────────────────────────────────────────────────
   useEffect(() => {
     if (mapRef.current) return
@@ -50,6 +62,8 @@ const GlobalMap = forwardRef(function GlobalMap(
     })
 
     map.on('style.load', () => {
+      map.resize()
+      setTimeout(() => map.resize(), 100)
       // Globe atmosphere
       map.setFog({
         color:           'rgb(5, 8, 16)',
@@ -360,8 +374,8 @@ const GlobalMap = forwardRef(function GlobalMap(
   }, [knownWells, flares, loaded])
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+    <div className="global-map-wrapper" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
 
       {/* Atmospheric Plume Simulation overlay */}
       {mapInstance && (
