@@ -2267,28 +2267,60 @@ input[type="range"] {
     margin-top: 4px;
   }
 
-  /* ── Emitters & Alerts Tab on Mobile ───────────────────────────────────── */
+  /* ── Emitters & Alerts Tab on Mobile (Full screen scrollable list) ── */
   .right-panel.mobile-active {
     border-left: none;
-    padding: 8px 12px 84px;
+    padding: 8px 12px 90px;
     background: var(--bg);
     overflow-y: auto;
     max-width: 100vw;
+    height: auto !important;
+    min-height: calc(100vh - 50px - 74px) !important;
+    max-height: none !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .right-panel.mobile-active .leaderboard {
+    flex: 1 !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .right-panel.mobile-active .leaderboard-list {
+    flex: 1 !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .right-panel.mobile-active .alert-feed {
+    flex: 1 !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
   }
 
   .lb-header-row, .lb-row {
     grid-template-columns: 20px 1fr 54px 64px;
     gap: 6px;
-    padding: 8px 6px;
+    padding: 10px 6px;
   }
 
-  /* ── Historical Trends Tab on Mobile ───────────────────────────────────── */
+  /* ── Historical Trends Tab on Mobile (Full screen view) ────────────────── */
   .bottom-panel-2.mobile-active {
     border-top: none;
-    padding: 12px 14px 84px;
+    padding: 12px 14px 90px;
     background: var(--bg);
     overflow-y: auto;
-    min-height: 480px;
+    min-height: calc(100vh - 50px - 74px) !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: 1 !important;
     max-width: 100vw;
   }
 

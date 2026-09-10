@@ -368,7 +368,7 @@ export default function App() {
           </div>
 
           {activeTab === 'leaderboard' ? (
-            <div className="leaderboard" style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="leaderboard">
               <CompanyLeaderboard emitters={emitters} loading={loading} />
             </div>
           ) : (
