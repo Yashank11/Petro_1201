@@ -12,6 +12,12 @@ function formatDateLabel(dateStr) {
   return dateStr
 }
 
+function formatCount(num) {
+  if (num === undefined || num === null) return ''
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
+  return String(num)
+}
+
 export default function TimeLapsePlayer({
   dates = [],
   dateStats = {},
@@ -110,7 +116,7 @@ export default function TimeLapsePlayer({
                   <span className="tl-chip-dot" />
                   <span className="tl-chip-label">{label}</span>
                   {stats.count !== undefined && (
-                    <span className="tl-chip-count">{stats.count}</span>
+                    <span className="tl-chip-count">{formatCount(stats.count)}</span>
                   )}
                 </button>
               )
