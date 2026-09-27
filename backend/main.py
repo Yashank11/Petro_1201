@@ -6,6 +6,7 @@ No database. No Docker. Just: uvicorn main:app --reload
 import os
 import time
 import math
+import numpy as np
 from typing import Optional, Any
 
 from dotenv import load_dotenv
@@ -105,6 +106,19 @@ async def _build_df(days: int):
     df = cluster_flares(df)
     df = attribute_to_basin(df)
     df = calculate_emissions(df)
+
+    # Persistence & routine flaring classification across observation window
+    df["date_str"] = df["acq_date"].astype(str).str[:10]
+    total_dates = max(1, df["date_str"].nunique())
+    cluster_dates = df.groupby("cluster_id")["date_str"].transform("nunique")
+    df["persistence_days"] = cluster_dates
+    df["total_window_days"] = total_dates
+    df["persistence_pct"] = ((cluster_dates / total_dates) * 100).round(1)
+    df["flaring_type"] = np.where(
+        (df["persistence_days"] >= 3) | (df["persistence_pct"] >= 50.0),
+        "Routine Flaring",
+        "Transient Spike"
+    )
     return df
 
 
@@ -172,6 +186,10 @@ async def get_flares(days: int = Query(5, ge=1, le=5)):
                 "gas_value_usd":    round(float(row.get("gas_value_usd", 0)), 2),
                 "attr_confidence":  round(float(row.get("attr_confidence", 0.5)), 3),
                 "attr_alternatives": str(row.get("attr_alternatives", "[]")),
+                "persistence_days": int(row.get("persistence_days", 1)),
+                "total_window_days": int(row.get("total_window_days", days)),
+                "persistence_pct":  round(float(row.get("persistence_pct", 20.0)), 1),
+                "flaring_type":     str(row.get("flaring_type", "Transient Spike")),
                 # Explainability fields
                 "viirs_source":     "NASA FIRMS VIIRS NRT (375m)",
                 "emission_model":   "Elvidge 2016 — log₁₀(V) = 1.40 + 1.55×log₁₀(FRP)",
@@ -323,11 +341,19 @@ async def get_top_emitters(
             gas_value_usd  =("gas_value_usd",  lambda x: round(x.sum(), 0)),
             anomaly_flag   =("is_anomaly",     lambda x: bool(x.any())),
             attr_confidence=("attr_confidence", lambda x: round(x.mean(), 3)),
+            persistence_pct=("persistence_pct", lambda x: round(float(x.mean()), 1)),
+            routine_count  =("flaring_type",    lambda x: int((x == "Routine Flaring").sum())),
         )
         .reset_index()
         .sort_values("co2_eq_kt", ascending=False)
         .head(limit)
         .reset_index(drop=True)
+    )
+
+    # Classify company flaring habit (Routine vs Transient)
+    grouped["flaring_type"] = grouped.apply(
+        lambda r: "Routine" if (r["routine_count"] / max(1, r["flare_count"])) >= 0.4 or r["persistence_pct"] >= 50.0 else "Transient",
+        axis=1
     )
 
     # Recent half totals for change_pct

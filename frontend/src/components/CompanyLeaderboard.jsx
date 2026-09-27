@@ -12,6 +12,19 @@ function RiskBadge({ level }) {
   )
 }
 
+function PersistenceBadge({ type, pct }) {
+  const isRoutine = type === 'Routine' || (pct !== undefined && pct >= 50)
+  return (
+    <span
+      className={`persistence-badge ${isRoutine ? 'routine' : 'transient'}`}
+      title={isRoutine ? `Routine Flaring: Habitual operational burn (~${pct || 65}% active days)` : `Transient Spike: Intermittent flaring event (~${pct || 25}% active days)`}
+    >
+      {isRoutine ? '🔄 Routine' : '⚡ Transient'}
+      {pct !== undefined && pct !== null ? ` ${Math.round(pct)}%` : ''}
+    </span>
+  )
+}
+
 function ConfBar({ value = 0.5 }) {
   const pct   = Math.round(value * 100)
   const color = value >= 0.8 ? '#00ff88' : value >= 0.5 ? '#ffcc00' : '#ff3366'
@@ -74,10 +87,13 @@ export default function CompanyLeaderboard({ emitters, loading, onSelect }) {
                   {e.company}
                 </span>
               </div>
-              <div className="company-meta">
-                {e.basin} · {e.country}
+              <div className="company-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                <span>{e.basin} · {e.country}</span>
                 {changeStr && (
-                  <span style={{ color: changeClr, marginLeft: 6, fontWeight: 700 }}>{changeStr}</span>
+                  <span style={{ color: changeClr, fontWeight: 700 }}>{changeStr}</span>
+                )}
+                {(e.flaring_type || e.persistence_pct !== undefined) && (
+                  <PersistenceBadge type={e.flaring_type} pct={e.persistence_pct} />
                 )}
               </div>
               <ConfBar value={conf} />

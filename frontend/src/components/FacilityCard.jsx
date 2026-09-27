@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, ReferenceLine,
+  ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 
 // ── Confidence bar ──────────────────────────────────────────────────────────
@@ -34,47 +34,65 @@ function AltsList({ alts }) {
   )
 }
 
-// ── Mini sparkline from flares data grouped by date ─────────────────────────
-function Sparkline({ flares, clusterId }) {
-  const data = useMemo(() => {
-    if (!flares?.features) return []
-    const byDate = {}
-    flares.features.forEach(f => {
-      const p = f.properties
-      if (p.id === clusterId || (p.basin && p.basin !== 'Unknown')) {
-        const date = p.date || ''
-        if (!byDate[date]) byDate[date] = 0
-        byDate[date] += p.co2_eq_t || 0
-      }
-    })
-    return Object.entries(byDate)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, co2]) => ({ date: date.slice(5), co2: Math.round(co2 * 100) / 100 }))
-  }, [flares, clusterId])
+// ── Format date helper ──────────────────────────────────────────────────────
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '—'
+  try {
+    const parts = dateStr.split('-')
+    if (parts.length === 3) {
+      const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+  } catch {}
+  return dateStr.slice(5)
+}
 
-  if (!data.length) return (
-    <div style={{ color: 'var(--text-muted)', fontSize: 11, paddingTop: 12 }}>No trend data</div>
-  )
+// ── Multi-Day Burn History Component ─────────────────────────────────────────
+function MultiDayBurnHistory({ history, totalWindowDays, maxWindowFrp }) {
+  if (!history?.length) {
+    return (
+      <div style={{ color: 'var(--text-muted)', fontSize: 11, padding: '8px 0' }}>
+        No historical passes recorded in window.
+      </div>
+    )
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={80}>
-      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
-        <defs>
-          <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.35} />
-            <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
-        <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 9 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 9 }} axisLine={false} tickLine={false} />
-        <Tooltip
-          contentStyle={{ background: 'rgba(11,17,32,0.97)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 6, fontSize: 10 }}
-          formatter={v => [`${v} t CO₂`, '']}
-        />
-        <Area type="monotone" dataKey="co2" stroke="#00d4ff" strokeWidth={1.5} fill="url(#sparkGrad)" dot={false} />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="burn-history-list">
+      {history.map((h, i) => {
+        const barPct = Math.min(100, Math.max(8, Math.round((h.frp / Math.max(1, maxWindowFrp)) * 100)))
+        const barColor = h.is_anomaly
+          ? 'linear-gradient(90deg, #ff6b2b, #ff3366)'
+          : h.frp > 40
+          ? 'linear-gradient(90deg, #ffcc00, #ff6b2b)'
+          : 'linear-gradient(90deg, #00d4ff, #00ff88)'
+
+        return (
+          <div key={h.date || i} className="burn-history-row">
+            <div className="burn-history-date">
+              <span className="burn-date-pill">{formatDateLabel(h.date)}</span>
+              {h.is_anomaly && (
+                <span className="burn-anomaly-dot" title="Spike anomaly detected on this pass">⚡</span>
+              )}
+            </div>
+
+            <div className="burn-history-bar-wrap">
+              <div className="burn-history-bar-bg">
+                <div
+                  className="burn-history-bar-fill"
+                  style={{ width: `${barPct}%`, background: barColor }}
+                />
+              </div>
+            </div>
+
+            <div className="burn-history-stats">
+              <span className="burn-stat-frp">{h.frp.toFixed(1)} MW</span>
+              <span className="burn-stat-co2">{h.co2.toFixed(1)} t CO₂</span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -96,6 +114,79 @@ export default function FacilityCard({ site, flares, onClose }) {
   const gasUSD     = parseFloat(props.gas_value_usd || 0)
   const anomScore  = parseFloat(props.anomaly_score || 0)
 
+  // ── Multi-day history matching ─────────────────────────────────────────────
+  const { history, allDatesCount, persistencePct, isRoutine, maxHistoryFrp } = useMemo(() => {
+    if (!flares?.features) {
+      return { history: [], allDatesCount: 1, persistencePct: 20, isRoutine: false, maxHistoryFrp: frpVal }
+    }
+
+    const allDates = new Set()
+    const matchedPasses = []
+
+    flares.features.forEach(f => {
+      const p = f.properties
+      if (p?.date) allDates.add(p.date)
+
+      let match = false
+      if (p.id && props.id && String(p.id) === String(props.id)) {
+        match = true
+      } else if (props.well_name && p.well_name && p.well_name === props.well_name) {
+        match = true
+      } else if (props._lat && props._lon && f.geometry?.coordinates) {
+        const [lon, lat] = f.geometry.coordinates
+        if (Math.abs(lon - props._lon) < 0.02 && Math.abs(lat - props._lat) < 0.02) {
+          match = true
+        }
+      }
+
+      if (match) {
+        matchedPasses.push(p)
+      }
+    })
+
+    // Group matched passes by date (highest FRP per date)
+    const byDate = {}
+    matchedPasses.forEach(p => {
+      const d = p.date || ''
+      if (!d) return
+      if (!byDate[d] || (p.frp || 0) > (byDate[d].frp || 0)) {
+        byDate[d] = {
+          date: d,
+          frp: Number(p.frp || 0),
+          co2: Number(p.co2_eq_t || 0),
+          gas: Number(p.gas_value_usd || 0),
+          is_anomaly: Boolean(p.is_anomaly),
+          anomaly_score: Number(p.anomaly_score || 0),
+        }
+      }
+    })
+
+    const hist = Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date))
+    const totalDays = Math.max(1, allDates.size)
+    const activeDays = hist.length || (props.persistence_days || 1)
+    const pct = Math.round((activeDays / totalDays) * 100)
+    const routine = activeDays >= 3 || pct >= 50 || props.flaring_type === 'Routine Flaring'
+    const maxFrp = Math.max(...hist.map(h => h.frp), frpVal, 1)
+
+    return {
+      history: hist,
+      allDatesCount: totalDays,
+      persistencePct: pct,
+      isRoutine: routine,
+      maxHistoryFrp: maxFrp,
+    }
+  }, [flares, props, frpVal])
+
+  // Sparkline data from matched history
+  const sparkData = useMemo(() => {
+    if (!history.length) return []
+    return history.map(h => ({
+      date: formatDateLabel(h.date),
+      co2: Math.round(h.co2 * 100) / 100,
+      frp: Math.round(h.frp * 10) / 10,
+    }))
+  }, [history])
+
   // ── Derived gas-loss context ───────────────────────────────────────────────
   const gasAnnual    = gasUSD * 365
   const gasAnnualFmt = gasAnnual >= 1_000_000
@@ -103,7 +194,6 @@ export default function FacilityCard({ site, flares, onClose }) {
     : gasAnnual >= 1_000
     ? `$${(gasAnnual / 1_000).toFixed(1)}K`
     : `$${Math.round(gasAnnual)}`
-  // Approximate % above baseline from anomaly σ score (1σ ≈ 25% above mean)
   const gasVsBaseline = anomScore > 0.5 ? Math.round(anomScore * 25) : null
 
   const typicalFRP   = frpVal / (1 + (anomScore / 4 || 0))
@@ -138,11 +228,83 @@ export default function FacilityCard({ site, flares, onClose }) {
         <div className="facility-body">
           {/* Left column */}
           <div className="facility-left">
-            {/* Sparkline */}
+            {/* Persistence & Routine Flaring Profile */}
             <div className="facility-section">
-              <div className="facility-section-label">Emission Trend (observation window)</div>
-              <Sparkline flares={flares} clusterId={props.id} />
+              <div className="facility-section-label">Temporal Persistence & Flaring Habit</div>
+              <div
+                className={`persistence-profile-box ${isRoutine ? 'routine' : 'transient'}`}
+                style={{
+                  border: `1px solid ${isRoutine ? 'rgba(0,212,255,0.4)' : 'rgba(255,107,43,0.4)'}`,
+                  background: isRoutine ? 'rgba(0,212,255,0.06)' : 'rgba(255,107,43,0.06)',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isRoutine ? 'var(--cyan)' : 'var(--orange)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}>
+                    {isRoutine ? '🔄 Routine Operational Flaring' : '⚡ Transient Flaring Spike'}
+                  </span>
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: 999,
+                    background: isRoutine ? 'rgba(0,212,255,0.15)' : 'rgba(255,107,43,0.15)',
+                    color: isRoutine ? 'var(--cyan)' : 'var(--orange)',
+                  }}>
+                    {persistencePct}% Persistence
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                  {isRoutine
+                    ? `Observed active on ${history.length || props.persistence_days || 1} of ${allDatesCount} satellite passes. Consistent continuous flaring indicates routine operational venting.`
+                    : `Observed on ${history.length || props.persistence_days || 1} of ${allDatesCount} satellite passes. Flaring behavior suggests an intermittent maintenance event or transient pressure relief.`}
+                </div>
+              </div>
             </div>
+
+            {/* Multi-Day Burn History Bar Log */}
+            <div className="facility-section">
+              <div className="facility-section-label">Multi-Day Satellite Burn History</div>
+              <MultiDayBurnHistory
+                history={history}
+                totalWindowDays={allDatesCount}
+                maxWindowFrp={maxHistoryFrp}
+              />
+            </div>
+
+            {/* Sparkline */}
+            {sparkData.length > 1 && (
+              <div className="facility-section">
+                <div className="facility-section-label">Emission Trend Curve (kt CO₂)</div>
+                <ResponsiveContainer width="100%" height={75}>
+                  <AreaChart data={sparkData} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
+                    <defs>
+                      <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: 'rgba(11,17,32,0.97)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 6, fontSize: 10 }}
+                      formatter={v => [`${v} t CO₂`, '']}
+                    />
+                    <Area type="monotone" dataKey="co2" stroke="#00d4ff" strokeWidth={1.5} fill="url(#sparkGrad)" dot={{ r: 2, fill: '#00d4ff' }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
 
             {/* Typical vs current */}
             <div className="facility-section">
@@ -226,8 +388,14 @@ export default function FacilityCard({ site, flares, onClose }) {
                 {props.landmark && <div className="fc-row"><span>Landmark</span><span>{props.landmark}</span></div>}
                 <div className="fc-row"><span>Basin</span><span>{props.basin}</span></div>
                 <div className="fc-row"><span>Country</span><span>{props.country}</span></div>
-                <div className="fc-row"><span>Date</span><span>{props.date}</span></div>
-                <div className="fc-row"><span>Cluster Size</span><span>{props.cluster_size} detections</span></div>
+                <div className="fc-row"><span>Detection Date</span><span>{props.date}</span></div>
+                <div className="fc-row"><span>Cluster Detections</span><span>{props.cluster_size || 1} points</span></div>
+                <div className="fc-row">
+                  <span>Flaring Habit</span>
+                  <span style={{ color: isRoutine ? 'var(--cyan)' : 'var(--orange)', fontWeight: 600 }}>
+                    {isRoutine ? 'Routine' : 'Transient Spike'}
+                  </span>
+                </div>
               </div>
             </div>
 

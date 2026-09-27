@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import GlobalMap from './components/GlobalMap'
 import KPICards from './components/KPICards'
 import CompanyLeaderboard from './components/CompanyLeaderboard'
@@ -12,6 +12,7 @@ import FacilityCard from './components/FacilityCard'
 import HistoricalFlaringChart from './components/HistoricalFlaringChart'
 import PetroCopilot from './components/PetroCopilot'
 import PlumeControls from './components/PlumeControls'
+import TimeLapsePlayer from './components/TimeLapsePlayer'
 import {
   getSummary, getFlares, getEmitters, getAlerts,
   getTrends, getKnownWells, getOilPrices, getWind,
@@ -31,7 +32,11 @@ function LoadingScreen({ subtext }) {
 // ── CSV Export ───────────────────────────────────────────────────────────────
 function exportFlaresCSV(flares) {
   if (!flares?.features?.length) return
-  const headers = ['Well/Basin','Company','Country','FRP_MW','CO2_t_day','Gas_Value_USD','Anomaly','Confidence','Date','Lat','Lon']
+  const headers = [
+    'Well/Basin','Company','Country','FRP_MW','CO2_t_day','Gas_Value_USD',
+    'Anomaly','Confidence','Date','Lat','Lon',
+    'Persistence_Days','Persistence_Pct','Flaring_Type'
+  ]
   const rows = flares.features.map(f => {
     const p = f.properties
     const [lon, lat] = f.geometry.coordinates
@@ -43,6 +48,9 @@ function exportFlaresCSV(flares) {
       p.is_anomaly ? 'YES' : 'NO',
       p.attr_confidence ?? '',
       p.date, lat.toFixed(5), lon.toFixed(5),
+      p.persistence_days ?? 1,
+      p.persistence_pct ? `${p.persistence_pct}%` : '20%',
+      p.flaring_type || 'Transient Spike',
     ].map(v => `"${v}"`).join(',')
   })
   const csv = [headers.join(','), ...rows].join('\n')
@@ -58,6 +66,8 @@ export default function App() {
   const [days,          setDays]          = useState(5)
   const [activeCountry, setActiveCountry] = useState('all')
   const [activeTab,     setActiveTab]     = useState('leaderboard')
+  const [selectedDate,  setSelectedDate]  = useState('all')
+  const [isPlaying,     setIsPlaying]     = useState(false)
   const [loading,       setLoading]       = useState(true)
   const [loadingSubtext, setLoadingSubtext] = useState('Ingesting satellite + well data…')
   const [error,         setError]         = useState(null)
@@ -165,13 +175,101 @@ export default function App() {
     }
   }, [mobileTab])
 
-  // Filter flares by active country only (basin filter removed)
-  const visibleFlares = !flares ? null : {
-    ...flares,
-    features: flares.features.filter(f => {
-      return activeCountry === 'all' || f.properties.country === activeCountry
-    }),
-  }
+  // Country matching helper supporting exact names & variations (e.g. USA / United States)
+  const matchesCountry = useCallback((itemCountry, targetCountry) => {
+    if (!targetCountry || targetCountry === 'all') return true
+    if (!itemCountry) return false
+    const item = String(itemCountry).trim().toLowerCase()
+    const target = String(targetCountry).trim().toLowerCase()
+    if (item === target) return true
+    if ((target === 'usa' || target === 'united states') && (item === 'usa' || item === 'united states')) return true
+    return item.includes(target) || target.includes(item)
+  }, [])
+
+  // Available unique dates extracted from satellite observations
+  const availableDates = useMemo(() => {
+    if (!flares?.features) return []
+    const datesSet = new Set()
+    flares.features.forEach(f => {
+      if (f.properties?.date) datesSet.add(f.properties.date)
+    })
+    return Array.from(datesSet).sort()
+  }, [flares])
+
+  // Aggregate stats per date for time-lapse player
+  const dateStats = useMemo(() => {
+    if (!flares?.features) return {}
+    const stats = {}
+    flares.features.forEach(f => {
+      const d = f.properties?.date
+      if (!d) return
+      if (!stats[d]) stats[d] = { count: 0, co2: 0, frp: 0 }
+      stats[d].count += 1
+      stats[d].co2 += f.properties?.co2_eq_t || 0
+      stats[d].frp += f.properties?.frp || 0
+    })
+    return stats
+  }, [flares])
+
+  // Filter flares by active country AND selected date
+  const visibleFlares = useMemo(() => {
+    if (!flares) return null
+    const filtered = (flares.features || []).filter(f => {
+      const matchCountry = matchesCountry(f.properties?.country, activeCountry)
+      const matchDate = selectedDate === 'all' || f.properties?.date === selectedDate
+      return matchCountry && matchDate
+    })
+    return {
+      ...flares,
+      features: filtered,
+    }
+  }, [flares, activeCountry, selectedDate, matchesCountry])
+
+  // Dynamically recalculate KPI summary based on selected country AND selected date
+  const currentSummary = useMemo(() => {
+    if (!summary) return null
+    if (activeCountry === 'all' && selectedDate === 'all') return summary
+
+    let filtered = flares?.features || []
+    if (activeCountry !== 'all') {
+      filtered = filtered.filter(f => matchesCountry(f.properties?.country, activeCountry))
+    }
+    if (selectedDate !== 'all') {
+      filtered = filtered.filter(f => f.properties?.date === selectedDate)
+    }
+
+    const activeSites = filtered.length
+    const totalDetections = filtered.reduce((acc, f) => acc + (f.properties?.cluster_size || 1), 0)
+    const totalCo2Kt = filtered.reduce((acc, f) => acc + (f.properties?.co2_eq_t || 0), 0) / 1000
+    const totalGasUsd = filtered.reduce((acc, f) => acc + (f.properties?.gas_value_usd || 0), 0)
+    const anomalyCount = filtered.filter(f => f.properties?.is_anomaly).length
+    const avgFrp = activeSites > 0 ? filtered.reduce((acc, f) => acc + (f.properties?.frp || 0), 0) / activeSites : 0
+
+    return {
+      ...summary,
+      total_detections: totalDetections,
+      active_sites: activeSites,
+      total_co2_kt: Number(totalCo2Kt.toFixed(2)),
+      anomaly_count: anomalyCount,
+      total_gas_value_usd: Math.round(totalGasUsd),
+      avg_frp_mw: Number(avgFrp.toFixed(1)),
+      countries_affected: activeSites > 0 ? (activeCountry !== 'all' ? 1 : new Set(filtered.map(f => f.properties?.country)).size) : 0,
+    }
+  }, [summary, flares, activeCountry, selectedDate, matchesCountry])
+
+  // Filter top emitters list by active country
+  const currentEmitters = useMemo(() => {
+    if (!emitters) return []
+    if (activeCountry === 'all') return emitters
+    return emitters.filter(e => matchesCountry(e.country, activeCountry) || matchesCountry(e.basin, activeCountry))
+  }, [emitters, activeCountry, matchesCountry])
+
+  // Filter ESG alerts by active country
+  const currentAlerts = useMemo(() => {
+    if (!alerts) return []
+    if (activeCountry === 'all') return alerts
+    return alerts.filter(a => matchesCountry(a.country, activeCountry))
+  }, [alerts, activeCountry, matchesCountry])
 
   // FlyTo handler for WellDatabase
   const handleFlyTo = useCallback((lon, lat) => {
@@ -268,7 +366,7 @@ export default function App() {
           {[
             { id: 'map',       icon: '🌍', label: 'Globe' },
             { id: 'analytics', icon: '📊', label: 'KPI Intel' },
-            { id: 'emitters',  icon: '⚡', label: 'Emitters', badge: alerts.length || null },
+            { id: 'emitters',  icon: '⚡', label: 'Emitters', badge: currentAlerts.length || null },
             { id: 'trends',    icon: '📈', label: 'History' },
           ].map(tab => (
             <button
@@ -294,7 +392,7 @@ export default function App() {
           onDaysChange={setDays}
           activeCountry={activeCountry}
           onCountryChange={(c) => { setActiveCountry(c); setMobileMenuOpen(false) }}
-          summary={summary}
+          summary={currentSummary}
           onOpenWellDB={() => { setWellDBOpen(true); setMobileMenuOpen(false) }}
           mobileOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
@@ -335,6 +433,18 @@ export default function App() {
             plumeVisible={plumeVisible}
             plumeOpacity={plumeOpacity}
           />
+
+          {/* Orbital Time-Lapse Player — floating at bottom of map */}
+          {availableDates.length > 1 && (
+            <TimeLapsePlayer
+              dates={availableDates}
+              dateStats={dateStats}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              isPlaying={isPlaying}
+              onTogglePlay={() => setIsPlaying(p => !p)}
+            />
+          )}
         </main>
 
         {/* ── Right panel (Emitters & Alerts) ────────────────────────────── */}
@@ -350,12 +460,12 @@ export default function App() {
               className={`tab-btn ${activeTab === 'alerts' ? 'active' : ''}`}
               onClick={() => setActiveTab('alerts')}
             >
-              Alerts {alerts.length > 0 && (
+              Alerts {currentAlerts.length > 0 && (
                 <span style={{
                   marginLeft: 4, background: 'var(--red)', color: '#fff',
                   borderRadius: 999, fontSize: 9, padding: '1px 5px', fontWeight: 700,
                 }}>
-                  {alerts.length}
+                  {currentAlerts.length}
                 </span>
               )}
             </button>
@@ -369,16 +479,16 @@ export default function App() {
 
           {activeTab === 'leaderboard' ? (
             <div className="leaderboard">
-              <CompanyLeaderboard emitters={emitters} loading={loading} />
+              <CompanyLeaderboard emitters={currentEmitters} loading={loading} />
             </div>
           ) : (
-            <AlertFeed alerts={alerts} loading={loading} />
+            <AlertFeed alerts={currentAlerts} loading={loading} />
           )}
         </aside>
 
         {/* ── Bottom panel (KPIs & Trends) ──────────────────────────────── */}
         <section className={`bottom-panel mobile-view-section ${mobileTab === 'analytics' ? 'mobile-active' : ''}`}>
-          <KPICards summary={summary} loading={loading} trends={trends} alerts={alerts} />
+          <KPICards summary={currentSummary} loading={loading} trends={trends} alerts={currentAlerts} flares={visibleFlares} />
 
           <div className="trend-panel">
             <div style={{ 
@@ -452,7 +562,7 @@ export default function App() {
       {/* ── PetroCopilot AI Command Center ────────────────────────────── */}
       <PetroCopilot
         mapRef={mapRef}
-        summary={summary}
+        summary={currentSummary}
         days={days}
       />
 

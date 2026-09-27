@@ -1919,6 +1919,247 @@ input[type="range"] {
   }
 }
 
+/* ── Orbital Time-Lapse Player ────────────────────────────────────────────── */
+.time-lapse-player {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.tl-inner {
+  background: rgba(8, 14, 28, 0.92);
+  border: 1px solid rgba(0, 212, 255, 0.32);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), 0 0 16px rgba(0, 212, 255, 0.15);
+  user-select: none;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tl-play-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.38);
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.tl-play-btn:hover {
+  background: rgba(0, 212, 255, 0.24);
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+}
+.tl-play-btn.playing {
+  background: rgba(255, 107, 43, 0.18);
+  border-color: rgba(255, 107, 43, 0.5);
+  color: var(--orange);
+}
+.tl-play-btn.playing:hover {
+  box-shadow: 0 0 10px rgba(255, 107, 43, 0.4);
+}
+
+.tl-track-wrap {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  max-width: 380px;
+  scrollbar-width: none;
+}
+.tl-track-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.tl-track {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tl-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.tl-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.tl-chip.active {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.35);
+}
+.tl-chip-all {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+.tl-chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background 0.2s ease;
+}
+.tl-chip.active .tl-chip-dot {
+  background: var(--cyan);
+  box-shadow: 0 0 5px var(--cyan);
+}
+.tl-chip-count {
+  font-size: 9px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.tl-chip.active .tl-chip-count {
+  color: var(--cyan);
+  background: rgba(0, 212, 255, 0.22);
+}
+
+.tl-status {
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tl-status-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.tl-status-date {
+  color: #fff;
+  font-weight: 700;
+}
+.tl-status-sep {
+  color: var(--text-muted);
+}
+.tl-status-co2 {
+  color: var(--orange);
+  font-weight: 600;
+}
+
+/* ── Persistence Badges ───────────────────────────────────────────────────── */
+.persistence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 5px;
+  border-width: 1px;
+  border-style: solid;
+  letter-spacing: 0.2px;
+}
+.persistence-badge.routine {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.35);
+}
+.persistence-badge.transient {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.12);
+  border-color: rgba(255, 152, 0, 0.35);
+}
+
+/* ── Multi-Day Burn History in FacilityCard ────────────────────────────────── */
+.burn-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.burn-history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.burn-history-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 65px;
+  flex-shrink: 0;
+}
+.burn-date-pill {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 10px;
+}
+.burn-anomaly-dot {
+  font-size: 9px;
+  color: #ff3366;
+}
+.burn-history-bar-wrap {
+  flex: 1;
+}
+.burn-history-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.burn-history-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.burn-history-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  width: 120px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+.burn-stat-frp {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.burn-stat-co2 {
+  color: var(--orange);
+  font-family: var(--font-mono);
+}
+
 /* ── MOBILE BREAKPOINT (max-width: 768px) ────────────────────────────────── */
 @media (max-width: 768px) {
   /* Layout transformation: from fixed grid to fluid app container */
@@ -2362,10 +2603,30 @@ input[type="range"] {
     gap: 8px;
   }
 
+  /* ── TimeLapsePlayer Mobile Adjustments ────────────────────────────────── */
+  .time-lapse-player {
+    bottom: 80px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 20px) !important;
+    max-width: 440px !important;
+  }
+  .tl-inner {
+    padding: 5px 8px !important;
+    gap: 6px !important;
+    justify-content: space-between !important;
+  }
+  .tl-track-wrap {
+    max-width: 200px !important;
+  }
+  .tl-status {
+    display: none !important;
+  }
+
   /* ── PetroCopilot Mobile Adjustments ───────────────────────────────────── */
   .copilot-toggle {
-    bottom: 78px;
-    right: 12px;
+    bottom: 136px !important;
+    right: 12px !important;
     padding: 7px 12px;
     font-size: 11px;
   }
@@ -2378,16 +2639,16 @@ input[type="range"] {
     border-radius: 20px 20px 0 0;
   }
 
-  /* ── Map Legend repositioned to avoid Copilot collision on mobile ───────── */
+  /* ── Map Legend repositioned to avoid collisions on mobile ─────────────── */
   .map-overlay.bot-right {
-    bottom: 78px !important;
+    bottom: 136px !important;
     left: 10px !important;
     right: auto !important;
     padding: 6px 10px !important;
     max-width: 140px !important;
     background: rgba(8, 14, 28, 0.92) !important;
     border-radius: 8px !important;
-    transform: scale(0.9);
+    transform: scale(0.85);
     transform-origin: bottom left;
   }
 
