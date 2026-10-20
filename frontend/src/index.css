@@ -1932,134 +1932,145 @@ input[type="range"] {
 }
 
 .tl-inner {
-  background: rgba(8, 14, 28, 0.94);
-  border: 1px solid rgba(0, 212, 255, 0.35);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(8, 14, 28, 0.92);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-radius: 10px;
-  padding: 4px 10px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 212, 255, 0.15);
+  gap: 6px;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.7), 0 0 14px rgba(0, 212, 255, 0.12);
   user-select: none;
   max-width: 100%;
 }
 
-.tl-controls {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.tl-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  margin: 0 2px;
 }
 
+/* Play button */
 .tl-play-btn {
   display: flex;
   align-items: center;
   gap: 5px;
   background: rgba(0, 212, 255, 0.12);
-  border: 1px solid rgba(0, 212, 255, 0.38);
+  border: 1px solid rgba(0, 212, 255, 0.35);
   color: var(--cyan);
   font-size: 10.5px;
   font-weight: 700;
   border-radius: 6px;
-  padding: 4px 9px;
+  padding: 4px 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   font-family: inherit;
   white-space: nowrap;
-}
-.tl-play-btn:hover {
-  background: rgba(0, 212, 255, 0.24);
-  border-color: var(--cyan);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
-}
-.tl-play-btn.playing {
-  background: rgba(255, 107, 43, 0.18);
-  border-color: rgba(255, 107, 43, 0.5);
-  color: var(--orange);
-}
-.tl-play-btn.playing:hover {
-  box-shadow: 0 0 10px rgba(255, 107, 43, 0.4);
-}
-
-.tl-track-wrap {
-  display: flex;
-  align-items: center;
-  overflow-x: visible;
-  max-width: none;
   flex-shrink: 0;
 }
-
-.tl-track {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.tl-play-btn:hover {
+  background: rgba(0, 212, 255, 0.22);
+  border-color: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.35);
+}
+.tl-play-btn.playing {
+  background: rgba(255, 107, 43, 0.15);
+  border-color: rgba(255, 107, 43, 0.45);
+  color: var(--orange);
 }
 
+/* Date chips */
 .tl-chip {
   display: flex;
   align-items: center;
   gap: 4px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--text-muted);
   font-size: 9.5px;
   font-weight: 600;
   border-radius: 5px;
-  padding: 3px 6px;
+  padding: 3px 7px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
   font-family: inherit;
+  flex-shrink: 0;
 }
 .tl-chip:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .tl-chip.active {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: var(--cyan);
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.5);
   color: #fff;
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.35);
+  box-shadow: 0 0 6px rgba(0, 212, 255, 0.3);
 }
 .tl-chip-all {
-  font-size: 9.5px;
+  color: var(--text-secondary);
   font-weight: 700;
-  padding: 4px 7px;
 }
 .tl-chip-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--text-muted);
-  transition: background 0.2s ease;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
 }
 .tl-chip.active .tl-chip-dot {
   background: var(--cyan);
-  box-shadow: 0 0 5px var(--cyan);
-}
-.tl-chip-count {
-  font-size: 8.5px;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.06);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-family: var(--font-mono);
-}
-.tl-chip.active .tl-chip-count {
-  color: var(--cyan);
-  background: rgba(0, 212, 255, 0.22);
+  box-shadow: 0 0 4px var(--cyan);
 }
 
-.tl-status {
+/* Status pill on the right */
+.tl-status-pill {
+  margin-left: auto;
   padding-left: 8px;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 9.5px;
-  color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
+}
+.tl-status-date { color: #fff; font-weight: 700; }
+.tl-status-sep  { color: rgba(255, 255, 255, 0.2); }
+.tl-status-co2  { color: var(--orange); font-weight: 600; }
+
+/* Legacy classes kept for backwards compat */
+.tl-controls { display: flex; align-items: center; gap: 5px; }
+.tl-track-wrap { display: flex; align-items: center; }
+.tl-track { display: flex; align-items: center; gap: 4px; }
+.tl-chip-count { display: none; }
+.tl-status { display: none; }
+.tl-status-text { display: none; }
+
+/* ── Mapbox branding — keep attribution required by ToS, but make discreet ─ */
+.mapboxgl-ctrl-logo {
+  opacity: 0.25 !important;
+  transform: scale(0.7) !important;
+  transform-origin: bottom left !important;
+  filter: grayscale(1) !important;
+  pointer-events: none !important;
+}
+.mapboxgl-ctrl-attrib {
+  background: transparent !important;
+  font-size: 8px !important;
+  opacity: 0.25 !important;
+  color: rgba(255,255,255,0.5) !important;
+}
+.mapboxgl-ctrl-attrib a { color: rgba(255,255,255,0.4) !important; }
+.mapboxgl-ctrl-attrib-button { display: none !important; }
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale {
+  display: none !important;
 }
 .tl-status-text {
   display: flex;

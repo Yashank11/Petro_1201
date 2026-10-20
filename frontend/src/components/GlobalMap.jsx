@@ -314,7 +314,7 @@ const GlobalMap = forwardRef(function GlobalMap(
       })
 
       map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right')
-      map.addControl(new mapboxgl.ScaleControl(), 'bottom-left')
+      // Scale bar removed for cleaner UI
 
       setLoaded(true)
       setMapInstance(map)

@@ -60,93 +60,49 @@ export default function TimeLapsePlayer({
   return (
     <div className="time-lapse-player">
       <div className="tl-inner">
-        {/* Play/Pause & All buttons */}
-        <div className="tl-controls">
+        {/* Play/Pause button */}
+        <button
+          type="button"
+          className={`tl-play-btn ${isPlaying ? 'playing' : ''}`}
+          onClick={onTogglePlay}
+          title={isPlaying ? 'Pause time-lapse' : 'Play day-by-day time-lapse'}
+        >
+          {isPlaying ? '⏸ Pause' : '▶ Play'}
+        </button>
+
+        {/* Separator */}
+        <div className="tl-divider" />
+
+        {/* All Days chip */}
+        <button
+          type="button"
+          className={`tl-chip tl-chip-all ${selectedDate === 'all' ? 'active' : ''}`}
+          onClick={() => { if (isPlaying) onTogglePlay(); onSelectDate('all') }}
+          title="View all days combined"
+        >
+          All ({dates.length}d)
+        </button>
+
+        {/* Date chips — label only, count in tooltip */}
+        {dates.map((date) => (
           <button
+            key={date}
             type="button"
-            className={`tl-play-btn ${isPlaying ? 'playing' : ''}`}
-            onClick={onTogglePlay}
-            title={isPlaying ? 'Pause orbital time-lapse' : 'Play orbital time-lapse day-by-day'}
+            className={`tl-chip ${selectedDate === date ? 'active' : ''}`}
+            onClick={() => { if (isPlaying) onTogglePlay(); onSelectDate(date) }}
+            title={`${date}: ${dateStats[date]?.count || 0} flares`}
           >
-            {isPlaying ? (
-              <>
-                <span className="tl-icon">⏸</span>
-                <span className="tl-btn-text">Pause</span>
-              </>
-            ) : (
-              <>
-                <span className="tl-icon">▶</span>
-                <span className="tl-btn-text">Time-Lapse</span>
-              </>
-            )}
+            <span className="tl-chip-dot" />
+            {formatDateLabel(date)}
           </button>
+        ))}
 
-          <button
-            type="button"
-            className={`tl-chip tl-chip-all ${selectedDate === 'all' ? 'active' : ''}`}
-            onClick={() => {
-              if (isPlaying) onTogglePlay()
-              onSelectDate('all')
-            }}
-            title="View all days aggregated"
-          >
-            All Days ({dates.length}d)
-          </button>
-        </div>
-
-        {/* Date Track / Chips */}
-        <div className="tl-track-wrap">
-          <div className="tl-track">
-            {dates.map((date) => {
-              const isSelected = selectedDate === date
-              const stats = dateStats[date] || {}
-              const label = formatDateLabel(date)
-
-              return (
-                <button
-                  key={date}
-                  type="button"
-                  className={`tl-chip ${isSelected ? 'active' : ''}`}
-                  onClick={() => {
-                    if (isPlaying) onTogglePlay()
-                    onSelectDate(date)
-                  }}
-                  title={`${date}: ${stats.count || 0} active flares`}
-                >
-                  <span className="tl-chip-dot" />
-                  <span className="tl-chip-label">{label}</span>
-                  {stats.count !== undefined && (
-                    <span className="tl-chip-count">{formatCount(stats.count)}</span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Status / Metric pill */}
-        <div className="tl-status">
-          {selectedDate === 'all' ? (
-            <div className="tl-status-text">
-              <span className="tl-status-date">Combined 5-Day View</span>
-              <span className="tl-status-sep">•</span>
-              <span>{totalFlares} Detections</span>
-              <span className="tl-status-sep">•</span>
-              <span className="tl-status-co2">{(totalCo2 / 1000).toFixed(1)} kt CO₂</span>
-            </div>
-          ) : (
-            <div className="tl-status-text">
-              <span className="tl-status-date">{formatDateLabel(selectedDate)}</span>
-              <span className="tl-status-sep">•</span>
-              <span>{activeStats?.count || 0} Flares</span>
-              {activeStats?.co2 !== undefined && (
-                <>
-                  <span className="tl-status-sep">•</span>
-                  <span className="tl-status-co2">{(activeStats.co2 / 1000).toFixed(2)} kt CO₂</span>
-                </>
-              )}
-            </div>
-          )}
+        {/* Compact status pill — right side */}
+        <div className="tl-status-pill">
+          {selectedDate === 'all'
+            ? <><span className="tl-status-co2">{(totalCo2 / 1000).toFixed(1)} kt CO₂</span><span className="tl-status-sep">·</span><span>{formatCount(totalFlares)} sites</span></>
+            : <><span className="tl-status-date">{formatDateLabel(selectedDate)}</span><span className="tl-status-sep">·</span><span className="tl-status-co2">{((activeStats?.co2 || 0) / 1000).toFixed(2)} kt</span></>
+          }
         </div>
       </div>
     </div>
