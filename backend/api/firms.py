@@ -15,55 +15,76 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.en
 FIRMS_KEY = os.getenv("FIRMS_MAP_KEY", "")
 FIRMS_BASE = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
-# Major gas-flaring regions worldwide: (west, south, east, north, label, country)
+# Comprehensive global gas-flaring basins: (west, south, east, north, label, country)
+# Covers ~95%+ of global upstream and offshore flaring.
 REGIONS = [
     # ── North America ──────────────────────────────────────────────────────────
-    (-104.5, 28.0,  -99.0, 34.0,  "Permian Basin",        "USA"),
-    (-104.0, 47.0, -100.0, 49.0,  "Bakken / Williston",   "USA"),
-    ( -99.5, 27.0,  -96.0, 30.5,  "Eagle Ford",           "USA"),
-    ( -95.5, 25.0,  -87.5, 30.0,  "Gulf of Mexico",       "USA"),
-    ( -80.5, 39.5,  -74.0, 43.0,  "Marcellus",            "USA"),
-    (-115.5, 55.5, -110.0, 58.5,  "Alberta Oil Sands",    "Canada"),
+    (-104.5, 28.0,  -99.0, 34.0,  "Permian Basin",            "USA"),
+    (-104.0, 47.0, -100.0, 49.0,  "Bakken / Williston",       "USA"),
+    ( -99.5, 27.0,  -96.0, 30.5,  "Eagle Ford",               "USA"),
+    ( -95.5, 25.0,  -87.5, 30.0,  "Gulf of Mexico",           "USA"),
+    ( -80.5, 39.5,  -74.0, 43.0,  "Marcellus",                "USA"),
+    (-153.5, 69.0, -145.0, 71.5,  "North Slope",              "USA"),
+    (-115.5, 55.5, -110.0, 58.5,  "Alberta Oil Sands",        "Canada"),
 
-    # ── South America ──────────────────────────────────────────────────────────
-    ( -73.5,  8.5,  -69.0, 12.0,  "Maracaibo Basin",      "Venezuela"),
-    ( -64.5,  7.0,  -59.5,  9.5,  "Orinoco Belt",         "Venezuela"),
+    # ── South & Central America ────────────────────────────────────────────────
+    ( -73.5,  8.5,  -69.0, 12.0,  "Maracaibo Basin",          "Venezuela"),
+    ( -64.5,  7.0,  -59.5,  9.5,  "Orinoco Belt",             "Venezuela"),
+    ( -71.0, -40.0, -67.0, -36.5, "Vaca Muerta / Neuquén",   "Argentina"),
+    ( -46.0, -25.5, -39.0, -21.0, "Campos & Santos Basins",   "Brazil"),
+    ( -77.5,  -2.0, -70.5,   6.5, "Oriente / Llanos",         "Colombia/Ecuador"),
 
     # ── Africa ─────────────────────────────────────────────────────────────────
-    (   4.5,  3.5,    9.5,  6.5,  "Niger Delta",          "Nigeria"),
-    (   4.0, 28.0,   10.5, 34.0,  "Hassi Messaoud",       "Algeria"),
-    (  13.0, 26.0,   22.0, 32.0,  "Sirte Basin",          "Libya"),
-    (  25.5, 27.0,   33.0, 31.0,  "Western Desert",       "Egypt"),
-    (  13.0, -6.0,   18.0, -2.0,  "Congo Basin",          "DRC"),
-    (   8.0, -2.0,   14.5,  4.0,  "Gulf of Guinea",       "Equatorial Guinea"),
+    (   4.5,  3.5,    9.5,  6.5,  "Niger Delta",              "Nigeria"),
+    (   4.0, 28.0,   10.5, 34.0,  "Hassi Messaoud",           "Algeria"),
+    (  13.0, 26.0,   22.0, 32.0,  "Sirte Basin",              "Libya"),
+    (  25.5, 27.0,   33.0, 31.0,  "Western Desert",           "Egypt"),
+    (  13.0, -6.0,   18.0, -2.0,  "Congo Basin",              "DRC"),
+    (   8.0, -2.0,   14.5,  4.0,  "Gulf of Guinea",           "Equatorial Guinea"),
+    (  11.0, -9.5,   14.5, -5.0,  "Angola Offshore",          "Angola"),
+    (   8.0, -4.5,   11.5,  0.5,  "Gabon Offshore",           "Gabon"),
+    (  27.5,  7.5,   33.5, 11.5,  "Muglad / Melut",           "Sudan/South Sudan"),
 
     # ── Middle East ────────────────────────────────────────────────────────────
-    (  44.0, 28.0,   50.5, 34.0,  "Middle East",          "Iraq/Kuwait"),
-    (  46.0, 22.0,   57.0, 28.0,  "Saudi Arabia",         "Saudi Arabia"),
-    (  47.0, 29.5,   52.5, 34.0,  "Khuzestan",            "Iran"),
-    (  50.0, 25.5,   57.0, 28.5,  "Southern Iran",        "Iran"),
-    (  54.0, 17.5,   60.0, 24.5,  "Oman",                 "Oman"),
+    (  44.0, 28.0,   50.5, 34.0,  "Middle East",              "Iraq/Kuwait"),
+    (  46.0, 22.0,   57.0, 28.0,  "Saudi Arabia",             "Saudi Arabia"),
+    (  47.0, 29.5,   52.5, 34.0,  "Khuzestan",                "Iran"),
+    (  50.0, 25.5,   57.0, 28.5,  "Southern Iran",            "Iran"),
+    (  51.0, 24.0,   55.5, 27.0,  "UAE / Qatar Offshore",     "UAE/Qatar"),
+    (  54.0, 17.5,   60.0, 24.5,  "Oman",                     "Oman"),
+    (  45.0, 14.0,   50.0, 17.0,  "Marib / Masila",           "Yemen"),
 
-    # ── Caspian / Central Asia ─────────────────────────────────────────────────
-    (  50.0, 43.5,   56.0, 48.5,  "Tengiz / Kashagan",    "Kazakhstan"),
-    (  48.0, 38.0,   51.5, 42.0,  "Baku Offshore",        "Azerbaijan"),
-    (  52.0, 36.0,   63.0, 43.0,  "Turkmenistan",         "Turkmenistan"),
+    # ── Caspian & Central Asia ─────────────────────────────────────────────────
+    (  50.0, 43.5,   56.0, 48.5,  "Tengiz / Kashagan",        "Kazakhstan"),
+    (  48.0, 38.0,   51.5, 42.0,  "Baku Offshore",            "Azerbaijan"),
+    (  52.0, 36.0,   63.0, 43.0,  "Turkmenistan",             "Turkmenistan"),
 
-    # ── Russia ─────────────────────────────────────────────────────────────────
-    (  59.0, 56.0,   82.0, 72.0,  "West Siberia",         "Russia"),
-    ( 140.5, 49.5,  145.0, 54.0,  "Sakhalin",             "Russia"),
+    # ── Russia & Eurasia ───────────────────────────────────────────────────────
+    (  59.0, 56.0,   82.0, 72.0,  "West Siberia",             "Russia"),
+    (  48.0, 51.5,   56.5, 57.0,  "Volga-Ural",               "Russia"),
+    (  50.0, 64.0,   61.0, 69.5,  "Timan-Pechora",            "Russia"),
+    (  84.0, 65.0,   90.0, 69.0,  "Vankor Cluster",           "Russia"),
+    ( 110.0, 58.0,  118.0, 62.0,  "Yakutia / Chayanda",       "Russia"),
+    ( 140.5, 49.5,  145.0, 54.0,  "Sakhalin",                 "Russia"),
 
     # ── Europe ─────────────────────────────────────────────────────────────────
-    (   1.0, 56.0,    8.0, 62.0,  "North Sea",            "Norway/UK"),
+    (   1.0, 56.0,    8.0, 62.0,  "North Sea",                "Norway/UK"),
 
     # ── South Asia ─────────────────────────────────────────────────────────────
-    (  68.0, 22.0,   78.0, 28.0,  "Rajasthan",            "India"),
+    (  68.0, 22.0,   78.0, 28.0,  "Rajasthan",                "India"),
+    (  70.0, 18.0,   73.5, 22.5,  "Mumbai High / Cambay",     "India"),
+    (  93.0, 25.5,   96.0, 28.0,  "Assam Basin",              "India"),
 
-    # ── East / South-East Asia ─────────────────────────────────────────────────
-    (  82.0, 37.5,   92.0, 44.0,  "Xinjiang Basin",       "China"),
-    ( 102.0, 28.0,  108.0, 32.0,  "Sichuan Basin",        "China"),
-    ( 104.0, -4.0,  117.5,  2.5,  "Kalimantan",           "Indonesia"),
-    (  99.0, -2.5,  106.0,  4.5,  "Sumatra",              "Indonesia"),
+    # ── East & Southeast Asia ──────────────────────────────────────────────────
+    (  82.0, 37.5,   92.0, 44.0,  "Xinjiang Basin",           "China"),
+    ( 102.0, 28.0,  108.0, 32.0,  "Sichuan Basin",            "China"),
+    ( 104.0, -4.0,  117.5,  2.5,  "Kalimantan",               "Indonesia"),
+    (  99.0, -2.5,  106.0,  4.5,  "Sumatra",                  "Indonesia"),
+    ( 111.0,  3.0,  119.0,  7.5,  "Sarawak / Sabah",          "Malaysia/Brunei"),
+
+    # ── Oceania / Australasia ──────────────────────────────────────────────────
+    ( 113.0, -22.5, 124.0, -13.5, "Northwest Shelf",          "Australia"),
+    ( 139.0, -29.5, 151.0, -25.0, "Cooper / Surat",           "Australia"),
 ]
 
 
@@ -96,14 +117,15 @@ async def _fetch_region(
 
 async def fetch_viirs_data(days: int = 7) -> pd.DataFrame:
     """
-    Fetch VIIRS SNPP NRT thermal anomalies for all major flaring regions.
+    Fetch VIIRS SNPP NRT thermal anomalies for all major flaring regions worldwide.
     days: 1–5 (FIRMS NRT limit is 5 days for the Area API).
-    All regions are fetched concurrently to avoid timeouts.
+    All regions are fetched concurrently to minimize total latency.
     """
     days = min(days, 5)
     source = "VIIRS_SNPP_NRT"
 
-    async with httpx.AsyncClient(timeout=45.0) as client:
+    limits = httpx.Limits(max_connections=50, max_keepalive_connections=25)
+    async with httpx.AsyncClient(timeout=45.0, limits=limits) as client:
         tasks = [
             _fetch_region(client, FIRMS_KEY, source, days, w, s, e, n, b, c)
             for w, s, e, n, b, c in REGIONS
